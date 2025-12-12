@@ -91,13 +91,14 @@ DATT/
 
 ---
 
-## 🌐 Network Setup (Khuyến nghị)
+## 🌐 Tailscale Setup (Khuyến nghị)
 
-**Dùng VPN để IP cố định:**
-- ✅ Tailscale (khuyến nghị) - IP không đổi, kết nối từ xa
-- ✅ ZeroTier (thay thế)
+**Dùng Tailscale cho IP cố định:**
+- ✅ IP không đổi - Kết nối ổn định
+- ✅ Kết nối từ xa - Ở đâu cũng được
+- ✅ Bảo mật cao - WireGuard encryption
 
-📖 Hướng dẫn: `docs/VPN_SETUP.md`
+📖 Hướng dẫn: `docs/TAILSCALE_SETUP.md`
 
 ---
 

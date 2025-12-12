@@ -29,28 +29,22 @@ raspberry-pi/
 ### Các thông số BẮT BUỘC phải sửa:
 
 ```python
-# Dòng 10-18: Sửa IP máy backend (laptop)
-
-# OPTION 1: IP LAN thông thường (chỉ dùng trong cùng mạng WiFi)
-RABBITMQ_HOST = '192.168.1.100'  # ← IP laptop trong mạng LAN
-
-# OPTION 2: IP Tailscale (KHUYẾN NGHỊ - IP cố định, kết nối từ xa)
-RABBITMQ_HOST = '100.64.1.2'  # ← IP Tailscale của laptop
-
-# OPTION 3: IP ZeroTier (thay thế VPN)
-RABBITMQ_HOST = '10.147.20.1'  # ← IP ZeroTier của laptop
+# Dòng 12: Dùng IP Tailscale của laptop (khuyến nghị)
+RABBITMQ_HOST = '100.64.1.2'  # ← IP Tailscale của backend laptop
 ```
 
-**🌐 Khuyến nghị: Dùng VPN (Tailscale)**
-- ✅ IP không đổi
-- ✅ Kết nối từ xa
-- ✅ Không cần config lại
-- 📖 Xem: `docs/VPN_SETUP.md`
+**🌐 Khuyến nghị: Dùng Tailscale**
+- ✅ IP cố định - Không bao giờ đổi
+- ✅ Kết nối từ xa - Ở đâu cũng được
+- ✅ Bảo mật cao - WireGuard
+- 📖 Setup: `docs/TAILSCALE_SETUP.md`
 
-**Cách tìm IP:**
-- **LAN IP:** `ipconfig` (Windows) hoặc `ifconfig` (Linux/Mac)
-- **Tailscale IP:** `tailscale ip -4`
-- **ZeroTier IP:** Xem trên web dashboard
+**Cách lấy IP Tailscale:**
+```bash
+# Trên laptop
+tailscale ip -4
+# Output: 100.64.1.2
+```
 
 ### Các thông số TÙY CHỌN (có thể điều chỉnh):
 

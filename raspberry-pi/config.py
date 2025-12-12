@@ -7,16 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # RabbitMQ Configuration
-# Option 1: LAN IP (local network only)
-# RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', '192.168.1.100')
-
-# Option 2: Tailscale IP (recommended - stable IP, works anywhere)
-# RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', '100.64.1.2')
-
-# Option 3: ZeroTier IP (alternative VPN)
-# RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', '10.147.20.1')
-
-RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')  # Change to your backend IP
+# Use Tailscale IP for stable connection (recommended)
+# Get IP with: tailscale ip -4
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', '100.64.1.2')  # Tailscale IP of backend laptop
 RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'guest')

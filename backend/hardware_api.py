@@ -13,20 +13,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/hardware", tags=["Hardware Control"])
 
-# Raspberry Pi connection config
-# Option 1: mDNS (local network only)
-# RASPBERRY_PI_HOST = "http://raspberrypi.local:5000"
+# Raspberry Pi connection - use Tailscale IP (recommended)
+# Get Pi IP with: tailscale ip -4
+RASPBERRY_PI_HOST = "http://100.64.1.3:5000"  # Tailscale IP of Raspberry Pi
 
-# Option 2: LAN IP (local network only)
-# RASPBERRY_PI_HOST = "http://192.168.1.50:5000"
-
-# Option 3: Tailscale IP (recommended - works anywhere)
-# RASPBERRY_PI_HOST = "http://100.64.1.3:5000"
-
-# Option 4: ZeroTier IP (alternative VPN)
-# RASPBERRY_PI_HOST = "http://10.147.20.2:5000"
-
-RASPBERRY_PI_HOST = "http://raspberrypi.local:5000"  # Change to your Pi address
 
 
 # Request models

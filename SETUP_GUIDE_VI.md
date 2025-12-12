@@ -1,7 +1,5 @@
 # HƯỚNG DẪN CÀI ĐẶT CHI TIẾT - HỆ THỐNG PHÂN LOẠI HOA QUẢ AI
 
-**Hướng dẫn từng bước, chi tiết, dễ hiểu cho người mới bắt đầu**
-
 ---
 
 ## 📋 MỤC LỤC

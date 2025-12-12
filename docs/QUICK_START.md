@@ -4,7 +4,64 @@ Hướng dẫn chạy hệ thống trong 15 phút.
 
 ---
 
-## Bước 1: Setup Firebase (5 phút)
+## Bước 1: Setup RabbitMQ (5 phút)
+
+### 1.1 Cài RabbitMQ
+
+**Windows - Chocolatey (Khuyến nghị):**
+```powershell
+# PowerShell as Administrator
+choco install rabbitmq -y
+```
+
+**Windows - Manual:**
+1. Download Erlang: https://www.erlang.org/downloads
+2. Download RabbitMQ: https://www.rabbitmq.com/docs/install-windows
+3. Cài Erlang → Cài RabbitMQ
+
+**Linux:**
+```bash
+sudo apt-get install rabbitmq-server -y
+sudo systemctl start rabbitmq-server
+```
+
+**macOS:**
+```bash
+brew install rabbitmq
+brew services start rabbitmq
+```
+
+### 1.2 Enable Management UI
+
+**Windows:**
+```powershell
+cd "C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.0\sbin"
+.\rabbitmq-plugins.bat enable rabbitmq_management
+net stop RabbitMQ
+net start RabbitMQ
+```
+
+**Linux/Mac:**
+```bash
+sudo rabbitmq-plugins enable rabbitmq_management
+sudo systemctl restart rabbitmq-server  # Linux
+# hoặc
+brew services restart rabbitmq  # Mac
+```
+
+### 1.3 Test
+
+**Mở browser:** http://localhost:15672
+
+**Login:** guest / guest
+
+✅ Thấy RabbitMQ Management UI = Success!
+
+📖 Chi tiết: `docs/RABBITMQ_SETUP.md`
+
+---
+
+## Bước 2: Setup Firebase (5 phút)
 
 ### 1.1 Tạo Firebase Project
 1. Truy cập https://console.firebase.google.com
@@ -32,7 +89,7 @@ Hướng dẫn chạy hệ thống trong 15 phút.
 
 ---
 
-## Bước 2: Backend (2 phút)
+## Bước 3: Backend (2 phút)
 
 ```bash
 cd backend
@@ -54,7 +111,7 @@ curl http://localhost:8000/api/health
 
 ---
 
-## Bước 3: Raspberry Pi (3 phút)
+## Bước 4: Raspberry Pi (3 phút)
 
 ```bash
 cd raspberry-pi
@@ -79,7 +136,7 @@ curl http://raspberrypi.local:5000/status
 
 ---
 
-## Bước 4: Web Dashboard (1 phút)
+## Bước 5: Web Dashboard (1 phút)
 
 ```bash
 cd dashboard
@@ -97,7 +154,7 @@ http://localhost:3000
 
 ---
 
-## Bước 5: Mobile App (4 phút)
+## Bước 6: Mobile App (4 phút)
 
 ```bash
 cd mobile_app
