@@ -1,0 +1,70 @@
+# Firebase credentials (IMPORTANT: DO NOT COMMIT TO GIT!)
+backend/firebase_config.json
+**/firebase_config.json
+
+# Firebase web config (contains API keys)
+dashboard/firebase-config.js
+
+# Mobile app Firebase configs
+mobile_app/android/app/google-services.json
+mobile_app/ios/Runner/GoogleService-Info.plist
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Flutter/Dart
+mobile_app/.dart_tool/
+mobile_app/.flutter-plugins
+mobile_app/.flutter-plugins-dependencies
+mobile_app/.packages
+mobile_app/build/
+mobile_app/ios/Pods/
+mobile_app/ios/.symlinks/
+mobile_app/android/.gradle/
+mobile_app/android/app/build/
+
+# Environment variables
+.env
+*.env
+!.env.example
+
+# Models (too large for git)
+*.h5
+*.pb
+models/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
