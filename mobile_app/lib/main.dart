@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
-import 'services/firebase_service.dart';
+import 'services/supabase_service.dart';
 import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: 'https://your-project.supabase.co',
+    anonKey: 'your-anon-key',
+  );
   
   runApp(const MyApp());
 }
@@ -23,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => FirebaseService()),
+        ChangeNotifierProvider(create: (_) => SupabaseService()),
         ChangeNotifierProvider(create: (_) => ApiService()),
       ],
       child: MaterialApp(

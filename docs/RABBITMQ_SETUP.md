@@ -1,6 +1,6 @@
-# 🐰 RabbitMQ Setup Guide - Windows Standalone
+# 🐰 RabbitMQ Setup Guide - Windows
 
-Hướng dẫn cài đặt RabbitMQ trên Windows (không cần Docker).
+Hướng dẫn cài đặt RabbitMQ trên Windows.
 
 ---
 
@@ -74,7 +74,7 @@ net start RabbitMQ
 **Command Prompt as Admin:**
 
 ```cmd
-cd "C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.0\sbin"
+cd "C:\Program Files\RabbitMQ Server\rabbitmq_server-4.2.1\sbin"
 rabbitmq-plugins.bat enable rabbitmq_management
 net start RabbitMQ
 ```
@@ -117,7 +117,7 @@ cd "C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.0\sbin"
 
 # Set permissions
 .\rabbitmqctl.bat set_user_tags admin administrator
-.\rabbitmqctl.bat set_permissions -p / admin ".*" ".*" ".*"
+.\rabbitmqctl.bat set_permissions -p / admin "phuong123" "phuong123" "phuong123"
 
 # List users
 .\rabbitmqctl.bat list_users
@@ -131,8 +131,8 @@ cd "C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.0\sbin"
 ```env
 RABBITMQ_HOST=localhost
 RABBITMQ_PORT=5672
-RABBITMQ_USER=guest
-RABBITMQ_PASSWORD=guest
+RABBITMQ_USER=admin
+RABBITMQ_PASSWORD=phuong123
 ```
 
 **Start backend:**
@@ -225,18 +225,6 @@ Set-Service -Name RabbitMQ -StartupType Manual
 ```powershell
 Set-Service -Name RabbitMQ -StartupType Automatic
 ```
-
----
-
-## 📊 So sánh Docker vs Standalone
-
-| Feature | Docker | Standalone |
-|---------|--------|------------|
-| **Cài đặt** | Phức tạp | Đơn giản |
-| **Resources** | Cao | Thấp hơn |
-| **Performance** | Overhead | Native |
-| **Windows** | Cần WSL 2 | Chạy trực tiếp |
-| **Khuyến nghị** | Linux/Mac | ✅ **Windows** |
 
 ---
 

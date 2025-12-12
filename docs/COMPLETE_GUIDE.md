@@ -11,14 +11,14 @@ All major components have been implemented for the AI Fruit Classification Syste
 ```
 DATT/
 ├── backend/                        # Python FastAPI Backend
-│   ├── firebase_storage.py        ✅ Cloud storage integration
+│   ├── supabase_storage.py        ✅ Cloud storage integration
 │   ├── hardware_api.py             ✅ Hardware control API
 │   ├── api.py                      ⚠️ Needs router integration
-│   ├── classifier_service.py       ⚠️ Needs Firebase upload
+│   ├── classifier_service.py       ⚠️ Needs Supabase upload
 │   ├── database.py                 ⚠️ Needs schema update
 │   ├── model.py
-│   ├── config.py                   ✅ Updated with Firebase
-│   └── requirements.txt            ✅ Added firebase-admin
+│   ├── config.py                   ✅ Updated with Supabase
+│   └── requirements.txt            ✅ Added supabase
 │
 ├── raspberry-pi/                   # Raspberry Pi Code
 │   ├── control_server.py           ✅ Flask HTTP server
@@ -31,10 +31,10 @@ DATT/
 │   └── requirements.txt            ✅ Added Flask
 │
 ├── dashboard/                      # Web Dashboard
-│   ├── index.html                  ✅ Added Firebase & controls
+│   ├── index.html                  ✅ Added Supabase & controls
 │   ├── app.js                      ⚠️ Needs completion
 │   ├── styles.css                  ⚠️ Needs control styles
-│   └── firebase-config.js          ✅ Firebase initialization
+│   └── supabase-config.js          ✅ Supabase initialization
 │
 ├── mobile_app/                     # Flutter Mobile App
 │   ├── lib/
@@ -44,17 +44,15 @@ DATT/
 │   │   │   ├── history_screen.dart      ✅ Image history
 │   │   │   └── settings_screen.dart     ✅ Settings
 │   │   ├── services/
-│   │   │   ├── firebase_service.dart    ✅ Firebase integration
+│   │   │   ├── supabase_service.dart    ✅ Supabase integration
 │   │   │   └── api_service.dart         ✅ REST API client
 │   │   └── widgets/
 │   │       └── stat_card.dart           ✅ Reusable widget
-│   ├── android/                    ⚠️ Needs google-services.json
-│   ├── ios/                        ⚠️ Needs GoogleService-Info.plist
 │   └── pubspec.yaml                ✅ All dependencies
 │
-├── FIREBASE_SETUP.md               ✅ Complete setup guide
+├── SUPABASE_SETUP.md               ✅ Complete setup guide
 ├── IR_SENSOR_SETUP.md              ✅ IR sensor guide
-└── README.md                       ⚠️ Needs update
+└── README.md                       ✅ Updated
 
 ✅ = Complete
 ⚠️ = Needs minor updates
@@ -64,14 +62,14 @@ DATT/
 
 ## 🚀 Quick Start Guide
 
-### 1. Firebase Setup
+### 1. Supabase Setup
 
-Follow `FIREBASE_SETUP.md`:
+Follow `SUPABASE_SETUP.md`:
 ```bash
-1. Create Firebase project at console.firebase.google.com
-2. Enable Storage, Firestore, Auth, Cloud Messaging
-3. Download credentials
-4. Configure security rules
+1. Create Supabase project at supabase.com
+2. Create tables: classifications, users
+3. Create storage bucket: fruit-images
+4. Get API keys from Settings
 5. Create admin user
 ```
 
@@ -83,12 +81,9 @@ cd backend
 # Install dependencies
 pip install -r requirements.txt
 
-# Add Firebase credentials
-# Place firebase_config.json from Firebase Console
-
 # Configure environment
 cp .env.example .env
-# Edit .env with your settings
+# Edit .env with Supabase credentials
 
 # Start backend services
 python classifier_service.py  # Terminal 1
@@ -117,7 +112,7 @@ chmod +x start.sh
 ```bash
 cd dashboard
 
-# Update firebase-config.js with your Firebase config
+# Update supabase-config.js with your Supabase config
 
 # Serve (using Python)
 python -m http.server 3000
@@ -134,9 +129,7 @@ cd mobile_app
 # Get dependencies
 flutter pub get
 
-# Add Firebase config files:
-# - android/app/google-services.json
-# - ios/Runner/GoogleService-Info.plist
+# Update Supabase config in lib/main.dart
 
 # Run on device
 flutter run
@@ -160,9 +153,9 @@ RABBITMQ_PORT=5672
 API_HOST=0.0.0.0
 API_PORT=8000
 
-# Firebase
-FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
-FIREBASE_CREDENTIALS_PATH=firebase_config.json
+# Supabase
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_KEY=your-service-role-key
 ```
 
 ### Raspberry Pi (.env)
@@ -175,15 +168,11 @@ TRIGGER_MODE=ir_sensor  # or time_based, continuous, manual
 IR_SENSOR_PIN=24
 ```
 
-### Web Dashboard (firebase-config.js)
+### Web Dashboard (supabase-config.js)
 ```javascript
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project.firebasestorage.app",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abc..."
+const supabaseConfig = {
+    url: 'https://xxxxx.supabase.co',
+    anonKey: 'your-anon-key'
 };
 ```
 
@@ -192,9 +181,9 @@ const firebaseConfig = {
 ## 🎯 Features Implemented
 
 ### ✅ Backend
-- [x] Firebase Cloud Storage integration
+- [x] Supabase Cloud Storage integration
 - [x] Image upload to cloud
-- [x] Metadata storage in Firestore
+- [x] Metadata storage in Supabase Database
 - [x] Hardware control API (conveyor, servo, camera)
 - [x] Admin authentication middleware
 - [x] RESTful API endpoints
@@ -210,7 +199,7 @@ const firebaseConfig = {
 - [x] Emergency stop
 
 ### ✅ Web Dashboard
-- [x] Firebase SDK integration
+- [x] Supabase SDK integration
 - [x] Authentication UI
 - [x] Hardware control panel
 - [x] Real-time statistics
@@ -221,7 +210,7 @@ const firebaseConfig = {
 - [x] Dashboard with statistics
 - [x] History with image gallery
 - [x] Settings screen
-- [x] Firebase real-time sync
+- [x] Supabase real-time sync
 - [x] API service for hardware control
 - [x] Offline support ready
 - [x] Material 3 design
@@ -256,8 +245,8 @@ python setup_admin.py
 
 ### Backend
 ```bash
-# Test Firebase
-python backend/firebase_storage.py
+# Test Supabase
+python backend/supabase_storage.py
 
 # Test API
 curl http://localhost:8000/api/health
@@ -286,10 +275,10 @@ flutter run --release
 
 ## 🐛 Troubleshooting
 
-### Firebase Connection Issues
-- Check `firebase_config.json` is present
-- Verify Storage bucket name in config
-- Check Firestore rules allow read/write
+### Supabase Connection Issues
+- Check `.env` file has correct URL and key
+- Verify Supabase project is active
+- Check RLS policies allow read/write
 
 ### Raspberry Pi Unreachable
 - Verify IP address in backend config
@@ -312,12 +301,12 @@ flutter run --release
 └──────┬──────┘
        │ RabbitMQ
        ↓
-┌──────────────┐     Firebase      ┌─────────────┐
+┌──────────────┐     Supabase      ┌─────────────┐
 │   Backend    │◄──────────────────►│   Cloud     │
 │   Server     │                    │  Storage    │
 └──────┬───────┘                    └──────┬──────┘
        │                                   │
-       │ WebSocket/REST                    │ Firestore
+       │ WebSocket/REST                    │ Supabase DB
        ↓                                   ↓
 ┌──────────────┐                    ┌─────────────┐
 │     Web      │                    │   Mobile    │
@@ -339,9 +328,9 @@ flutter run --release
 
 ## 📝 Notes
 
-- **Free Tier**: Firebase Spark plan sufficient for testing
+- **Free Tier**: Supabase free tier sufficient for testing (500MB database, 1GB storage)
 - **Scalability**: Can handle ~100 classifications/day
-- **Security**: Implement proper Firebase rules before production
+- **Security**: Implement proper RLS policies before production
 - **Backup**: Set up automated database backups
 
 ---
@@ -349,7 +338,7 @@ flutter run --release
 ## 🆘 Support
 
 For issues or questions:
-1. Check `FIREBASE_SETUP.md` for Firebase setup
+1. Check `SUPABASE_SETUP.md` for Supabase setup
 2. Check `IR_SENSOR_SETUP.md` for hardware
 3. Review implementation plan
 4. Check system logs

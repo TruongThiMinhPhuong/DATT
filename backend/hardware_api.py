@@ -30,13 +30,13 @@ class TriggerModeRequest(BaseModel):
     mode: str  # 'ir_sensor', 'time_based', 'continuous', 'manual'
 
 
-# Admin authentication (simplified - will use Firebase later)
+# Admin authentication (simplified - will use Supabase later)
 async def verify_admin(authorization: Optional[str] = Header(None)):
     """
     Verify admin authorization
-    In production, this will check Firebase token
+    In production, this will check Supabase JWT token
     """
-    # TODO: Implement Firebase token verification
+    # TODO: Implement Supabase JWT token verification
     # For now, just check if header exists
     if not authorization:
         raise HTTPException(status_code=401, detail="Unauthorized")

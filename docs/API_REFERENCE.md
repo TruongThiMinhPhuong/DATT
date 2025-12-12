@@ -16,7 +16,7 @@ http://localhost:8000
 
 Admin endpoints require authentication header:
 ```
-Authorization: Bearer <firebase_token>
+Authorization: Bearer <supabase_access_token>
 ```
 
 ---

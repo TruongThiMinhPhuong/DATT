@@ -7,12 +7,12 @@
 ## ✅ Backend (Completed)
 
 - [x] Install dependencies: `pip install -r backend/requirements.txt`
-- [x] Firebase integration code
+- [x] Supabase integration code
 - [x] Hardware API endpoints
 - [x] Database schema updated
-- [ ] **TODO: Setup Firebase** (follow `docs/FIREBASE_SETUP.md`)
-  - Download `firebase_config.json`
-  - Place in `backend/`
+- [ ] **TODO: Setup Supabase** (follow `docs/SUPABASE_SETUP.md`)
+  - Get Supabase URL and API keys
+  - Update `.env` file
 
 ---
 
@@ -30,13 +30,13 @@
 
 ## ✅ Web Dashboard (Completed)
 
-- [x] Firebase SDK integrated
+- [x] Supabase SDK integrated
 - [x] Authentication UI
 - [x] Hardware control panel
-- [ ] **TODO: Configure Firebase**
-  - Copy web config from Firebase Console
-  - Update `dashboard/firebase-config.js`
-  - Replace YOUR_API_KEY, YOUR_PROJECT_ID, etc.
+- [ ] **TODO: Configure Supabase**
+  - Get Supabase URL and anon key
+  - Update `dashboard/supabase-config.js`
+  - Replace URL and API key
 
 ---
 
@@ -44,10 +44,9 @@
 
 - [x] Flutter project structure
 - [x] All screens (Dashboard, History, Settings)
-- [x] Firebase & API services
-- [ ] **TODO: Configure Firebase**
-  - Download `google-services.json` → `android/app/`
-  - Download `GoogleService-Info.plist` → `ios/Runner/`
+- [x] Supabase & API services
+- [ ] **TODO: Configure Supabase**
+  - Update Supabase URL and anon key in `lib/main.dart`
   - Run: `flutter pub get`
   - Build: `flutter build apk`
 
@@ -55,18 +54,19 @@
 
 ## 🚀 Deployment Steps
 
-### 1. Setup Firebase (15 minutes)
+### 1. Setup Supabase (10 minutes)
 ```bash
-1. Go to https://console.firebase.google.com
+1. Go to https://supabase.com
 2. Create project: "fruit-classification-system"
-3. Enable: Storage, Firestore, Authentication, Cloud Messaging
-4. Download service account key → backend/firebase_config.json
-5. Copy web config → dashboard/firebase-config.js
-6. Download google-services.json → mobile_app/android/app/
-7. Download GoogleService-Info.plist → mobile_app/ios/Runner/
+3. Create tables: classifications, users
+4. Create storage bucket: fruit-images
+5. Get API keys from Settings
+6. Update backend/.env with Supabase credentials
+7. Update dashboard/supabase-config.js
+8. Update mobile_app/lib/main.dart
 ```
 
-See: `docs/FIREBASE_SETUP.md`
+See: `docs/SUPABASE_SETUP.md`
 
 ### 2. Start Backend (2 minutes)
 ```bash

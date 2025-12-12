@@ -1,13 +1,10 @@
-# Firebase credentials (IMPORTANT: DO NOT COMMIT TO GIT!)
+# Supabase credentials (IMPORTANT: DO NOT COMMIT TO GIT!)
+backend/.env
+.env
+
+# Old Firebase credentials (can be removed)
 backend/firebase_config.json
 **/firebase_config.json
-
-# Firebase web config (contains API keys)
-dashboard/firebase-config.js
-
-# Mobile app Firebase configs
-mobile_app/android/app/google-services.json
-mobile_app/ios/Runner/GoogleService-Info.plist
 
 # Python
 __pycache__/

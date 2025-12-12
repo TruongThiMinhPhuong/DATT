@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
+import '../services/supabase_service.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -35,31 +36,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _selectedFilter == 'all'
-            ? FirebaseFirestore.instance
-                .collection('classifications')
-                .orderBy('timestamp', descending: true)
-                .limit(100)
-                .snapshots()
-            : FirebaseFirestore.instance
-                .collection('classifications')
-                .where('classification', isEqualTo: _selectedFilter)
-                .orderBy('timestamp', descending: true)
-                .limit(100)
-                .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: Consumer<SupabaseService>(
+        builder: (context, supabase, child) {
+          if (!supabase.isInitialized) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final docs = snapshot.data?.docs ?? [];
+          final classifications = supabase.recentClassifications
+              .where((item) => 
+                  _selectedFilter == 'all' || 
+                  item['classification'] == _selectedFilter)
+              .toList();
 
-          if (docs.isEmpty) {
+          if (classifications.isEmpty) {
             return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -72,13 +61,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              return _buildHistoryCard(context, data);
-            },
+          return RefreshIndicator(
+            onRefresh: () => supabase.refreshData(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: classifications.length,
+              itemBuilder: (context, index) {
+                final data = classifications[index];
+                return _buildHistoryCard(context, data);
+              },
+            ),
           );
         },
       ),

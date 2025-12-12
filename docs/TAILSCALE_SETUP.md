@@ -93,7 +93,7 @@ RABBITMQ_HOST = '100.64.1.2'  # Thay bằng IP Tailscale laptop của bạn
 
 ```python
 # Dòng 29: Dùng IP Tailscale của Pi
-RASPBERRY_PI_HOST = "http://100.64.1.3:5000"  # Thay bằng IP Tailscale Pi của bạn
+RASPBERRY_PI_HOST = "http://100.79.176.108"  # Thay bằng IP Tailscale Pi của bạn
 ```
 
 ### 3. Mobile App (Tùy chọn)
@@ -102,7 +102,7 @@ RASPBERRY_PI_HOST = "http://100.64.1.3:5000"  # Thay bằng IP Tailscale Pi củ
 
 ```dart
 // Dòng 6: Dùng IP Tailscale của laptop
-ApiService({this.baseUrl = 'http://100.64.1.2:8000'});
+ApiService({this.baseUrl = 'http://100.112.253.55:8000'});
 ```
 
 ---

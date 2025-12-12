@@ -5,7 +5,7 @@ import 'dart:convert';
 class ApiService extends ChangeNotifier {
   final String baseUrl;
 
-  ApiService({this.baseUrl = 'http://your-server-ip:8000'});
+  ApiService({this.baseUrl = 'http://100.112.253.55:8000'});
 
   Future<Map<String, dynamic>> getStatistics() async {
     try {

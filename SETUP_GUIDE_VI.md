@@ -116,58 +116,7 @@ sudo apt install python3 python3-pip python3-venv
 brew install python@3.11
 ```
 
-### 2.2. Cài Đặt Docker
-
-Docker dùng để chạy RabbitMQ message broker.
-
-#### Windows:
-
-**Bước 1**: Tải Docker Desktop
-1. Vào: https://www.docker.com/products/docker-desktop/
-2. Click **"Download for Windows"**
-3. Chờ tải (khoảng 500MB)
-
-**Bước 2**: Cài Docker
-1. Chạy file **Docker Desktop Installer.exe**
-2. Giữ tất cả tùy chọn mặc định
-3. Click **"OK"**
-4. **Khởi động lại máy tính**
-
-**Bước 3**: Khởi động Docker
-1. Mở **Docker Desktop** (icon con cá voi)
-2. Đợi Docker khởi động (dòng chữ màu xanh lá: "Docker Desktop is running")
-3. **Để Docker Desktop chạy nền**
-
-**Bước 4**: Kiểm tra
-Mở **Command Prompt**:
-```cmd
-docker --version
-```
-Kết quả: `Docker version 24.x.x` → **Thành công!**
-
-#### Linux/Ubuntu:
-
-```bash
-# Cài đặt Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-
-# Thêm user vào group docker
-sudo usermod -aG docker $USER
-
-# Đăng xuất và đăng nhập lại
-logout
-
-# Kiểm tra
-docker --version
-```
-
-#### macOS:
-
-Tải Docker Desktop từ: https://www.docker.com/products/docker-desktop/
-Cài đặt như Windows.
-
-### 2.3. Tải Code Về Máy
+### 2.2. Tải Code Về Máy
 
 **Cách 1: Tải ZIP** (Dễ nhất)
 
@@ -199,7 +148,6 @@ d:\DATT\
 │   ├── config.py
 │   ├── requirements.txt
 │   └── .env.example
-├── docker-compose.yml
 ├── README.md
 └── start-backend.bat
 ```
@@ -270,8 +218,10 @@ mkdir data
 
 ### 2.5. Khởi Động Backend
 
-**Bước 1**: Mở Docker Desktop
-- Đảm bảo Docker đang chạy (icon con cá voi phải màu xanh)
+**Bước 1**: Đảm bảo RabbitMQ đã được cài đặt
+- Windows: Cài từ https://www.rabbitmq.com/install-windows.html
+- Linux: `sudo apt install rabbitmq-server`
+- macOS: `brew install rabbitmq`
 
 **Bước 2**: Quay về thư mục gốc
 
@@ -287,10 +237,9 @@ start-backend.bat
 ```
 
 📺 **Bạn sẽ thấy**:
-1. Docker bắt đầu tải RabbitMQ (lần đầu ~5 phút)
-2. Cửa sổ mới 1: **Classifier Service** (màn hình đen với text)
-3. Cửa sổ mới 2: **API Server** (màn hình đen với text)
-4. Trình duyệt tự động mở Dashboard
+1. Cửa sổ mới 1: **Classifier Service** (màn hình đen với text)
+2. Cửa sổ mới 2: **API Server** (màn hình đen với text)
+3. Trình duyệt tự động mở Dashboard
 
 **Kiểm tra**:
 - RabbitMQ Management: http://localhost:15672
@@ -867,8 +816,7 @@ Nếu lỗi kết nối:
 **Bước 1**: Đảm bảo tất cả đang chạy
 
 **Trên Máy Tính**:
-✅ Docker Desktop running
-✅ RabbitMQ container running
+✅ RabbitMQ running
 ✅ Classifier Service window open
 ✅ API Server window open
 ✅ Dashboard: http://localhost:8000/dashboard/
@@ -1073,7 +1021,7 @@ start-backend.bat
 
 ### 8.1. Checklist Hoàn Thành
 
-- [ ] Máy tính: Python, Docker cài đặt
+- [ ] Máy tính: Python và RabbitMQ cài đặt
 - [ ] Máy tính: Backend chạy thành công
 - [ ] Raspberry Pi: OS cài đặt, SSH được
 - [ ] Raspberry Pi: Camera hoạt động

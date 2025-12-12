@@ -10,12 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   
-  # Firebase
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  firebase_storage: ^11.5.6
-  cloud_firestore: ^4.13.6
-  firebase_messaging: ^14.7.9
+  # Supabase
+  supabase_flutter: ^2.3.0
   
   # UI
   cupertino_icons: ^1.0.2
@@ -60,3 +56,4 @@ flutter_launcher_icons:
   image_path: "assets/icons/app_icon.png"
   adaptive_icon_background: "#4CAF50"
   adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+

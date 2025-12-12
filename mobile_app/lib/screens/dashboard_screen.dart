@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/firebase_service.dart';
+import '../services/supabase_service.dart';
 import '../widgets/stat_card.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -15,21 +15,21 @@ class DashboardScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              context.read<FirebaseService>().refreshData();
+              context.read<SupabaseService>().refreshData();
             },
           ),
         ],
       ),
-      body: Consumer<FirebaseService>(
-        builder: (context, firebase, child) {
-          if (!firebase.isInitialized) {
+      body: Consumer<SupabaseService>(
+        builder: (context, supabase, child) {
+          if (!supabase.isInitialized) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final stats = firebase.statistics;
+          final stats = supabase.statistics;
 
           return RefreshIndicator(
-            onRefresh: () => firebase.refreshData(),
+            onRefresh: () => supabase.refreshData(),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
@@ -86,9 +86,9 @@ class DashboardScreen extends StatelessWidget {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: firebase.recentClassifications.length,
+                    itemCount: supabase.recentClassifications.length,
                     itemBuilder: (context, index) {
-                      final item = firebase.recentClassifications[index];
+                      final item = supabase.recentClassifications[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(

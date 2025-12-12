@@ -10,7 +10,7 @@ Hệ thống phân loại trái cây tự động sử dụng AI, băng tải, v
 - 🤖 AI phân loại trái cây (Tươi/Hỏng/Khác)
 - 🎥 Camera 5MP + xử lý ảnh nâng cao
 - 🔧 Điều khiển phần cứng từ xa (Web + Mobile)
-- ☁️ Lưu trữ đám mây Firebase
+- ☁️ Lưu trữ đám mây Supabase
 - 📱 Mobile app Android/iOS
 - 🌐 Web dashboard real-time
 
@@ -18,16 +18,16 @@ Hệ thống phân loại trái cây tự động sử dụng AI, băng tải, v
 
 ## 🚀 Quick Start
 
-### 1. Firebase Setup (5 phút)
+### 1. Supabase Setup (5 phút)
 
 ```bash
-1. Tạo project tại: https://console.firebase.google.com
-2. Enable: Storage, Firestore, Authentication
-3. Download firebase_config.json → backend/
-4. Copy Firebase web config → dashboard/firebase-config.js
+1. Tạo project tại: https://supabase.com
+2. Tạo tables: classifications, users
+3. Tạo storage bucket: fruit-images
+4. Copy API keys vào .env và config files
 ```
 
-📖 Chi tiết: `docs/FIREBASE_SETUP.md`
+📖 Chi tiết: `docs/SUPABASE_SETUP.md`
 
 ### 2. Backend
 
@@ -107,7 +107,7 @@ DATT/
 | File | Mô tả |
 |------|-------|
 | `docs/QUICK_START.md` | Hướng dẫn nhanh |
-| `docs/FIREBASE_SETUP.md` | Setup Firebase |
+| `docs/SUPABASE_SETUP.md` | Setup Supabase |
 | `docs/HARDWARE_SETUP.md` | Setup phần cứng |
 | `docs/API_REFERENCE.md` | API documentation |
 | `docs/MOBILE_APP.md` | Mobile app guide |
@@ -117,7 +117,7 @@ DATT/
 ## 🎯 Tính năng
 
 ### ✅ Backend
-- Firebase Cloud Storage
+- Supabase Cloud Storage
 - Real-time classification
 - Hardware control API
 - WebSocket updates
@@ -160,7 +160,7 @@ flutter test
 ## 📊 System Status
 
 **Completion**: ~90%
-**Technologies**: Python, Flutter, Firebase, TensorFlow
+**Technologies**: Python, Flutter, Supabase, TensorFlow
 **Platform**: Web, Android, iOS
 
 ---
@@ -182,8 +182,8 @@ flutter test
 
 ## 🐛 Troubleshooting
 
-**Firebase connection error?**
-→ Check `firebase_config.json` exists
+**Supabase connection error?**
+→ Check `.env` file và Supabase credentials
 
 **Raspberry Pi unreachable?**
 → Ping: `ping raspberrypi.local`

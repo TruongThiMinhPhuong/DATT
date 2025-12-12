@@ -1,375 +1,845 @@
-# Hardware Setup Guide
+# Hướng Dẫn Lắp Đặt Phần Cứng
 
-Complete wiring instructions for the AI Fruit Classification Conveyor System.
+Hướng dẫn chi tiết đấu nối dây cho Hệ thống Phân loại Trái cây AI trên Băng chuyền.
 
-## ⚠️ Safety First
+## ⚠️ An Toàn Trước Tiên
 
-- **Disconnect power** before making any connections
-- **Double-check polarity** to avoid damaging components
-- **Use appropriate power supplies** (5V 3A for Raspberry Pi)
-- **Insulate exposed connections** to prevent short circuits
+- **Ngắt nguồn điện** trước khi thực hiện bất kỳ kết nối nào
+- **Kiểm tra kỹ cực tính (+/-)** để tránh làm hỏng linh kiện
+- **Sử dụng nguồn điện phù hợp** (5V 3A cho Raspberry Pi)
+- **Bọc cách điện các mối nối** để tránh chập mạch
 
-## 📋 Components List
+## 📋 Danh Sách Linh Kiện
 
-| Component | Quantity | Notes |
-|-----------|----------|-------|
-| Raspberry Pi 4 (8GB) | 1 | Main controller |
-| 5V 3A Power Supply | 1 | For Raspberry Pi |
-| Camera Module 5MP | 1 | 1080p capable |
-| MG996R Servo Motor | 1 | 180° rotation |
-| L298N Motor Driver | 1 | Dual H-bridge |
-| JGB37-545 Conveyor Motor | 1 | 12V DC geared motor |
-| 12V Power Supply | 1 | For motors (2A+) |
-| IR/Proximity Sensor | 1 | For fruit detection |
-| Breadboard | 1 | For prototyping |
-| Jumper Wires | 20+ | Male-to-female, male-to-male |
+| Linh kiện | Số lượng | Ghi chú |
+|-----------|----------|---------|
+| Raspberry Pi 4 (8GB) | 1 | Bộ điều khiển chính |
+| Nguồn 5V 3A | 1 | Cấp nguồn cho Raspberry Pi |
+| Module Camera 5MP | 1 | Hỗ trợ 1080p |
+| Động cơ Servo MG996R | 1 | Xoay 180° |
+| Buck Converter LM2596 | 1 | Hạ áp 12V → 6V cho Servo |
+| Mạch điều khiển động cơ L298N | 1 | Cầu H kép |
+| Động cơ băng chuyền JGB37-545 | 1 | Motor DC 12V có hộp số |
+| Nguồn 12V | 1 | Cho động cơ và Servo (3A trở lên) |
+| Cảm biến hồng ngoại IR | 1 | Phát hiện trái cây |
+| Breadboard | 1 | Để thử nghiệm mạch |
+| Dây jumper | 20+ | Đực-cái, đực-đực |
 
-## 🔌 Pin Connections
+## 🔌 Sơ Đồ Chân GPIO
 
-### GPIO Pin Configuration (BCM Mode)
-
-```
-Raspberry Pi 4 GPIO Pinout (BCM):
-┌─────────┬──────────┐
-│ 3.3V    │ 5V       │
-│ GPIO 2  │ 5V       │
-│ GPIO 3  │ GND      │
-│ GPIO 4  │ GPIO 14  │
-│ GND     │ GPIO 15  │
-│ GPIO 17 │ GPIO 18  │ ← Servo PWM
-│ GPIO 27 │ GND      │ ← Conveyor IN1/GND
-│ GPIO 22 │ GPIO 23  │ ← Conveyor IN2/Sensor
-│ 3.3V    │ GPIO 24  │
-│ GPIO 10 │ GND      │
-└─────────┴──────────┘
-```
-
-## 🎥 Camera Module Connection
-
-**Camera Ribbon Cable:**
-
-1. Locate the **CSI camera port** on Raspberry Pi (between HDMI and audio jack)
-2. Gently pull up the black plastic clip
-3. Insert ribbon cable with **blue side facing audio jack**
-4. Contacts should face **away from the audio jack**
-5. Push down the black clip to secure
+### Cấu hình chân GPIO (Chế độ BCM)
 
 ```
-┌─────────────────────────┐
-│    Raspberry Pi 4       │
-│                         │
-│  [HDMI] [CSI] [Audio]  │
-│           ↑             │
-│      Camera Cable       │
-│    (Blue side out)      │
-└─────────────────────────┘
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    RASPBERRY PI 4 - SƠ ĐỒ CHÂN GPIO                       ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║    Chân vật lý    │    Tên BCM    │    Chức năng trong dự án             ║
+║   ─────────────────────────────────────────────────────────────────       ║
+║                                                                           ║
+║     ┌─────────────────────────────────────────┐                          ║
+║     │  (Pin 1)  3.3V  ●──────────● 5V (Pin 2) │ ← Nguồn cảm biến IR      ║
+║     │  (Pin 3)  GPIO2 ●──────────● 5V (Pin 4) │                          ║
+║     │  (Pin 5)  GPIO3 ●──────────● GND(Pin 6) │ ← Mass chung             ║
+║     │  (Pin 7)  GPIO4 ●──────────● GPIO14     │                          ║
+║     │  (Pin 9)  GND   ●──────────● GPIO15     │                          ║
+║     │  (Pin 11) GPIO17●──────────● GPIO18     │ ← ENA(L298N) / Servo PWM ║
+║     │  (Pin 13) GPIO27●──────────● GND        │ ← IN1 (L298N)            ║
+║     │  (Pin 15) GPIO22●──────────● GPIO23     │ ← IN2 (L298N) / IR OUT   ║
+║     │  (Pin 17) 3.3V  ●──────────● GPIO24     │                          ║
+║     │  (Pin 19) GPIO10●──────────● GND        │                          ║
+║     └─────────────────────────────────────────┘                          ║
+║                                                                           ║
+║   📍 CHÂN SỬ DỤNG TRONG DỰ ÁN:                                           ║
+║   ┌─────────────────────────────────────────────────────────────┐        ║
+║   │  GPIO 17 (Pin 11) → ENA của L298N (điều khiển tốc độ PWM)  │        ║
+║   │  GPIO 27 (Pin 13) → IN1 của L298N (điều khiển chiều quay)  │        ║
+║   │  GPIO 22 (Pin 15) → IN2 của L298N (điều khiển chiều quay)  │        ║
+║   │  GPIO 18 (Pin 12) → Tín hiệu PWM của Servo                  │        ║
+║   │  GPIO 23 (Pin 16) → Tín hiệu OUT của cảm biến IR            │        ║
+║   │  5V      (Pin 2)  → Nguồn cho cảm biến IR (Servo dùng LM2596)│        ║
+║   │  GND     (Pin 6)  → Mass chung cho tất cả linh kiện         │        ║
+║   └─────────────────────────────────────────────────────────────┘        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
-## 🎯 Servo Motor (MG996R) Wiring
+---
 
-**Servo Specs:**
-- Operating Voltage: 4.8V - 6V
-- Control Signal: PWM (50Hz)
-- Rotation: 0° - 180°
+## 🎥 Kết Nối Module Camera
 
-**Connections:**
+### Hướng dẫn gắn cáp ribbon Camera:
 
-| Servo Wire | Color | Connect To |
-|------------|-------|------------|
-| Signal | Orange/Yellow | GPIO 18 (Pin 12) |
-| Power | Red | 5V (Pin 2 or 4) |
-| Ground | Brown/Black | GND (Pin 6) |
+1. Tìm **cổng CSI camera** trên Raspberry Pi (nằm giữa cổng HDMI và jack âm thanh)
+2. Nhẹ nhàng kéo **clip nhựa đen** lên
+3. Cắm cáp ribbon với **mặt xanh hướng về phía jack âm thanh**
+4. Các điểm tiếp xúc phải **hướng ra xa** jack âm thanh
+5. Ấn clip nhựa đen xuống để cố định
 
 ```
-Servo Motor
-┌─────────┐
-│  MG996R │
-└─┬──┬──┬─┘
-  │  │  │
-  O  R  B  (Orange, Red, Brown)
-  │  │  │
-  │  │  └──── GND (Pin 6)
-  │  └─────── 5V (Pin 2)
-  └────────── GPIO 18 (Pin 12)
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    MODULE CAMERA 5MP - SƠ ĐỒ KẾT NỐI                      ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║                        ┌─────────────────────┐                            ║
+║                        │   ┌─────────────┐   │                            ║
+║                        │   │  ◉ Camera   │   │  ← Ống kính camera        ║
+║                        │   │    5MP      │   │                            ║
+║                        │   └─────────────┘   │                            ║
+║                        │     Module Camera   │                            ║
+║                        └──────────┬──────────┘                            ║
+║                                   │                                       ║
+║                          Cáp Ribbon (15 pin)                              ║
+║                                   │                                       ║
+║                    ┌──────────────▼──────────────┐                        ║
+║                    │      Raspberry Pi 4         │                        ║
+║                    │                             │                        ║
+║                    │  ┌─────┐ ┌─────┐ ┌─────┐   │                        ║
+║                    │  │HDMI │ │ CSI │ │Audio│   │                        ║
+║                    │  └─────┘ └──▲──┘ └─────┘   │                        ║
+║                    │             │               │                        ║
+║                    │        Cổng Camera          │                        ║
+║                    └─────────────────────────────┘                        ║
+║                                                                           ║
+║   📝 CÁCH CẮM CÁP RIBBON:                                                ║
+║   ┌─────────────────────────────────────────────────────────────┐        ║
+║   │                                                             │        ║
+║   │    Bước 1: Kéo clip đen lên    Bước 2: Cắm cáp vào         │        ║
+║   │         ┌─────┐                    ┌─────┐                  │        ║
+║   │         │▒▒▒▒▒│ ← Clip mở         │█████│ ← Cáp đã cắm     │        ║
+║   │         │     │                    │▒▒▒▒▒│                  │        ║
+║   │         └─────┘                    └─────┘                  │        ║
+║   │                                                             │        ║
+║   │    ⚠️  Mặt XANH của cáp hướng về phía jack AUDIO           │        ║
+║   │    ⚠️  Các chân tiếp xúc (màu bạc) hướng về phía HDMI      │        ║
+║   │                                                             │        ║
+║   └─────────────────────────────────────────────────────────────┘        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
-> **Note**: For heavy-duty servo operation, consider using an external 5V power supply (with common ground).
+---
 
-## 🚗 Conveyor Motor + L298N Driver Wiring
+## 🎯 Đấu Nối Động Cơ Servo (MG996R)
 
-**L298N Motor Driver Specs:**
-- Operating Voltage: 5V - 35V
-- Max Current: 2A per channel
-- Logic Voltage: 5V
+### Thông số kỹ thuật Servo:
+- Điện áp hoạt động: 4.8V - 6V
+- Tín hiệu điều khiển: PWM (50Hz)
+- Góc quay: 0° - 180°
 
-**Motor Driver Connections:**
+### Bảng kết nối:
 
-### Power Connections
-
-| L298N Terminal | Connect To |
-|----------------|------------|
-| 12V | 12V Power Supply (+) |
-| GND | 12V Power Supply (-) AND Raspberry Pi GND |
-| 5V Output | **DO NOT USE** (remove jumper if present) |
-
-### Motor Connections
-
-| L298N Terminal | Connect To |
-|----------------|------------|
-| OUT1 | Conveyor Motor (+) |
-| OUT2 | Conveyor Motor (-) |
-
-### Control Connections (Raspberry Pi)
-
-| L298N Pin | GPIO Pin (BCM) | Physical Pin | Function |
-|-----------|----------------|--------------|----------|
-| ENA | GPIO 17 | Pin 11 | Speed control (PWM) |
-| IN1 | GPIO 27 | Pin 13 | Direction control |
-| IN2 | GPIO 22 | Pin 15 | Direction control |
-
-**Wiring Diagram:**
+| Dây Servo | Màu sắc | Kết nối với |
+|-----------|---------|-------------|
+| Tín hiệu (Signal) | Cam/Vàng | GPIO 18 (Pin 12) |
+| Nguồn (Power) | Đỏ | 6V (từ LM2596 OUT+) |
+| Mass (Ground) | Nâu/Đen | GND (LM2596 OUT- + Pi GND) |
 
 ```
-                    12V Power Supply
-                    ┌────┬────┐
-                    │ +  │ -  │
-                    └─┬──┴─┬──┘
-                      │    │
-             ┌────────┘    └────────┐
-             │                      │
-        ┌────▼────────────────────▼──┐
-        │      L298N Motor Driver    │
-        │                            │
-        │  12V  GND  5V  ENA IN1 IN2 │
-        └───────┬────────┬───┬───┬───┘
-                │        │   │   │
-                │    ┌───┘   │   │
-                │    │   ┌───┘   │
-                │    │   │   ┌───┘
-        GND ────┘    │   │   │
-        (Pi Pin 6)   │   │   │
-                     │   │   │
-    GPIO 17 ─────────┘   │   │
-    (Pi Pin 11)          │   │
-                         │   │
-    GPIO 27 ─────────────┘   │
-    (Pi Pin 13)              │
-                             │
-    GPIO 22 ─────────────────┘
-    (Pi Pin 15)
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    SERVO MG996R - SƠ ĐỒ ĐẤU NỐI CHI TIẾT                  ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║         SERVO MG996R                          RASPBERRY PI 4              ║
+║      ┌─────────────────┐                  ┌─────────────────────┐        ║
+║      │   ┌─────────┐   │                  │                     │        ║
+║      │   │  ████   │   │                  │                     │        ║
+║      │   │  ████   │   │  Dây ĐỎ         │   (Không nối vào Pi)│        ║
+║      │   └────┬────┘   │ ═══► LM2596 OUT+ (6V)                  │        ║
+║      │   Cánh Servo    │                  │                     │        ║
+║      │                 │                  │   Pin 6  ●──── GND  │        ║
+║      └────────┬────────┘                  │          │          │        ║
+║               │                           │          │          │        ║
+║        ┌──────┼──────┐   Dây NÂU         │   Pin 6  ●──── GND  │        ║
+║        │      │      │ ═══► LM2596 OUT- (nối chung Pi GND)      │        ║
+║        │  ┌───┴───┐  │                    │                     │        ║
+║        │  │3 dây  │  │                    │  Pin 12 ●──── GPIO18│        ║
+║        │  │ra từ  │  │   Dây CAM         │          │          │        ║
+║        │  │servo  │  │ ══════════════════════════════┘          │        ║
+║        │  └───────┘  │                    │                     │        ║
+║        │ CAM ĐỎ NÂU  │                    └─────────────────────┘        ║
+║        └─────────────┘                                                   ║
+║                                                                           ║
+║   📍 BẢNG MÀU DÂY SERVO:                                                 ║
+║   ┌─────────────────────────────────────────────────────────────┐        ║
+║   │                                                             │        ║
+║   │    🟠 DÂY CAM/VÀNG  → Tín hiệu PWM    → GPIO 18 (Pin 12)   │        ║
+║   │    🔴 DÂY ĐỎ        → Nguồn dương 6V  → LM2596 OUT+        │        ║
+║   │    🟤 DÂY NÂU/ĐEN   → Mass (Ground)   → LM2596 OUT- (=GND) │        ║
+║   │                                                             │        ║
+║   └─────────────────────────────────────────────────────────────┘        ║
+║                                                                           ║
+║   ⚠️  LƯU Ý QUAN TRỌNG:                                                  ║
+║   • BẮT BUỘC dùng Buck Converter LM2596 (chỉnh 6V) cho Servo MG996R    ║
+║   • KHÔNG cấp nguồn từ Pi 5V → gây reset Pi hoặc cháy mạch             ║
+║   • Phải nối mass chung: LM2596 OUT- = Pi GND (Pin 6)                   ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
 
-        OUT1  OUT2
-        └─┬────┬─┘
-          │    │
-       ┌──▼────▼──┐
-       │ Conveyor │
-       │  Motor   │
-       └──────────┘
+### Sơ đồ cấp nguồn Servo với LM2596 (Khuyến nghị cho tải nặng):
+
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║            CẤP NGUỒN SERVO VỚI BUCK CONVERTER LM2596                      ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║                      NGUỒN 12V DC                                         ║
+║                    ┌──────────────┐                                       ║
+║                    │   +    -     │                                       ║
+║                    └───┬────┬─────┘                                       ║
+║                        │    │                                             ║
+║          ┌─────────────┘    └─────────────┐                              ║
+║          │                                │                               ║
+║          ▼                                ▼                               ║
+║   ┌──────────────────────────────────────────┐                           ║
+║   │         BUCK CONVERTER LM2596            │                           ║
+║   │                                          │                           ║
+║   │   ┌────────────────────────────────┐    │                           ║
+║   │   │  IN+   IN-   OUT+   OUT-       │    │                           ║
+║   │   │   ●     ●     ●      ●         │    │                           ║
+║   │   └───┼─────┼─────┼──────┼─────────┘    │                           ║
+║   │       │     │     │      │              │                           ║
+║   │   12V+│  12V-│    │      │              │                           ║
+║   │       │     │     │      │              │                           ║
+║   │   ┌───────────────┐                     │                           ║
+║   │   │ ○ Biến trở    │ ← Xoay để chỉnh    │                           ║
+║   │   │   điều chỉnh  │   điện áp ra = 6V  │                           ║
+║   │   └───────────────┘                     │                           ║
+║   │                                          │                           ║
+║   │   📍 CÁCH CHỈNH ĐIỆN ÁP:                │                           ║
+║   │   • Dùng đồng hồ VOM đo OUT+ và OUT-    │                           ║
+║   │   • Xoay biến trở cho đến khi = 6V      │                           ║
+║   │   • MG996R hoạt động tốt nhất ở 6V      │                           ║
+║   │                                          │                           ║
+║   └──────────────────────────────────────────┘                           ║
+║                        │      │                                          ║
+║                   OUT+ │      │ OUT-                                     ║
+║                   (6V) │      │ (GND)                                    ║
+║                        │      │                                          ║
+║          ┌─────────────┘      └───────────────┐                         ║
+║          │                                    │                          ║
+║          ▼                                    ▼                          ║
+║   ┌─────────────────────────────────────────────────┐                   ║
+║   │              SERVO MG996R                       │                   ║
+║   │                                                 │                   ║
+║   │    VCC (Đỏ) ◄────────────── 6V (từ LM2596)     │                   ║
+║   │    GND (Nâu) ◄────────────── GND (từ LM2596)   │                   ║
+║   │    Signal (Cam) ◄─────────── GPIO 18 (Pi)      │                   ║
+║   │                                                 │                   ║
+║   └─────────────────────────────────────────────────┘                   ║
+║                                    │                                     ║
+║   ┌────────────────────────────────┴─────────────────────────┐          ║
+║   │                    RASPBERRY PI 4                        │          ║
+║   │                                                          │          ║
+║   │    GPIO 18 (Pin 12) ───────► Tín hiệu điều khiển Servo  │          ║
+║   │    GND (Pin 6) ────────────► Nối chung với GND LM2596   │          ║
+║   │                                                          │          ║
+║   └──────────────────────────────────────────────────────────┘          ║
+║                                                                          ║
+║   ⚠️  QUAN TRỌNG - MASS CHUNG:                                          ║
+║   ┌─────────────────────────────────────────────────────────────┐       ║
+║   │                                                             │       ║
+║   │   GND của LM2596 ──┬── GND của Servo (dây Nâu)             │       ║
+║   │                    │                                        │       ║
+║   │                    └── GND của Raspberry Pi (Pin 6)        │       ║
+║   │                                                             │       ║
+║   │   ⚡ Nếu không nối mass chung → Servo sẽ KHÔNG hoạt động!  │       ║
+║   │                                                             │       ║
+║   └─────────────────────────────────────────────────────────────┘       ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
-**Important Notes:**
-- **Common Ground**: Connect Raspberry Pi GND to L298N GND
-- **ENA Jumper**: Keep ENA jumper removed for PWM speed control
-- **Motor Direction**: If motor runs backward, swap OUT1 and OUT2
+> **Lưu ý**: Sử dụng Buck Converter LM2596 chỉnh 6V cho servo MG996R khi hoạt động tải nặng. Phải nối mass chung giữa LM2596 và Raspberry Pi.
 
-## 📡 IR/Proximity Sensor (Fruit Detection)
+## 🚗 Đấu Nối Động Cơ Băng Chuyền + Mạch Điều Khiển L298N
 
-**Typical IR Sensor:**
-- Operating Voltage: 3.3V - 5V
-- Output: Digital (HIGH when object detected)
+### Thông số kỹ thuật L298N:
+- Điện áp hoạt động: 5V - 35V
+- Dòng tối đa: 2A mỗi kênh
+- Điện áp logic: 5V
 
-**Connections:**
+### Sơ đồ chi tiết mạch L298N:
 
-| Sensor Pin | Connect To |
-|------------|------------|
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    MẠCH ĐIỀU KHIỂN L298N - CẤU TẠO                        ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║                         NHÌN TỪ TRÊN XUỐNG                               ║
+║                                                                           ║
+║              ┌─────────────────────────────────────┐                     ║
+║              │          MẠCH L298N                 │                     ║
+║              │                                     │                     ║
+║              │   ┌─────┐       ┌─────┐            │                     ║
+║              │   │CHIP │       │CHIP │  ← IC L298N│                     ║
+║              │   │L298N│       │     │            │                     ║
+║              │   └─────┘       └─────┘            │                     ║
+║              │                                     │                     ║
+║              │   ┌─────────────────────────────┐  │                     ║
+║              │   │    TẢN NHIỆT (HEATSINK)     │  │                     ║
+║              │   └─────────────────────────────┘  │                     ║
+║              │                                     │                     ║
+║              │  OUT1  OUT2        OUT3  OUT4      │ ← Ngõ ra motor      ║
+║              │   ●     ●          ●     ●        │                     ║
+║              └───┼─────┼──────────┼─────┼────────┘                     ║
+║                  │     │          │     │                               ║
+║              ┌───┴─────┴───┐  (không dùng OUT3,4)                       ║
+║              │  MOTOR DC   │                                            ║
+║              │ BĂNG CHUYỀN │                                            ║
+║              └─────────────┘                                            ║
+║                                                                           ║
+║   📍 CÁC CHÂN PHÍA TRÊN MẠCH L298N:                                      ║
+║   ┌─────────────────────────────────────────────────────────────┐        ║
+║   │                                                             │        ║
+║   │  ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐        │        ║
+║   │  │ 12V │ GND │ 5V  │ ENA │ IN1 │ IN2 │ IN3 │ IN4 │        │        ║
+║   │  └──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴─────┴─────┘        │        ║
+║   │     │     │     │     │     │                               │        ║
+║   │     │     │     │     │     └── GPIO 22 (Pin 15)           │        ║
+║   │     │     │     │     └──────── GPIO 27 (Pin 13)           │        ║
+║   │     │     │     └────────────── GPIO 17 (Pin 11)           │        ║
+║   │     │     └──────────────────── KHÔNG DÙNG (gỡ jumper)     │        ║
+║   │     └────────────────────────── Nối với GND của Pi và 12V- │        ║
+║   │     └────────────────────────── Nguồn 12V dương (+)        │        ║
+║   │                                                             │        ║
+║   └─────────────────────────────────────────────────────────────┘        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+```
+
+### Kết nối nguồn điện:
+
+| Chân L298N | Kết nối với |
+|------------|-------------|
+| 12V | Nguồn 12V (+) dương |
+| GND | Nguồn 12V (-) âm VÀ GND của Raspberry Pi |
+| 5V Output | **KHÔNG SỬ DỤNG** (gỡ jumper nếu có) |
+
+### Kết nối động cơ:
+
+| Chân L298N | Kết nối với |
+|------------|-------------|
+| OUT1 | Động cơ băng chuyền (+) |
+| OUT2 | Động cơ băng chuyền (-) |
+
+### Kết nối điều khiển (từ Raspberry Pi):
+
+| Chân L298N | Chân GPIO (BCM) | Chân vật lý | Chức năng |
+|------------|-----------------|-------------|-----------|
+| ENA | GPIO 17 | Pin 11 | Điều khiển tốc độ (PWM) |
+| IN1 | GPIO 27 | Pin 13 | Điều khiển chiều quay |
+| IN2 | GPIO 22 | Pin 15 | Điều khiển chiều quay |
+
+### Sơ đồ đấu nối hoàn chỉnh:
+
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║              L298N + MOTOR BĂNG CHUYỀN - SƠ ĐỒ ĐẤU NỐI ĐẦY ĐỦ            ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║                         NGUỒN 12V DC                                      ║
+║                    ┌────────┬────────┐                                   ║
+║                    │   +    │   -    │                                   ║
+║                    │  12V   │  GND   │                                   ║
+║                    └────┬───┴────┬───┘                                   ║
+║                         │        │                                        ║
+║          ┌──────────────┘        └──────────────┐                        ║
+║          │                                      │                        ║
+║          ▼                                      ▼                        ║
+║   ┌──────────────────────────────────────────────────┐                  ║
+║   │              MẠCH ĐIỀU KHIỂN L298N               │                  ║
+║   │                                                  │                  ║
+║   │    12V   GND   5V   ENA   IN1   IN2   ENB       │                  ║
+║   │     ●     ●    ●     ●     ●     ●     ●        │                  ║
+║   │     │     │    │     │     │     │              │                  ║
+║   │     │     │    │     │     │     │              │                  ║
+║   └─────┼─────┼────┼─────┼─────┼─────┼──────────────┘                  ║
+║         │     │    │     │     │     │                                  ║
+║    Nguồn│     │    │     │     │     │                                  ║
+║    12V+ │     │  Không   │     │     │                                  ║
+║         │     │  dùng    │     │     │                                  ║
+║         │     │          │     │     │                                  ║
+║         │     │          │     │     │                                  ║
+║         │     │          │     │     │                                  ║
+║   ┌─────────────────────────────────────────────────────┐               ║
+║   │                 RASPBERRY PI 4                      │               ║
+║   │                                                     │               ║
+║   │    Pin 6 (GND) ────────────────────────┐           │               ║
+║   │    Pin 11 (GPIO 17) ─────────┐         │           │               ║
+║   │    Pin 13 (GPIO 27) ───────┐ │         │           │               ║
+║   │    Pin 15 (GPIO 22) ─────┐ │ │         │           │               ║
+║   │                          │ │ │         │           │               ║
+║   └──────────────────────────┼─┼─┼─────────┼───────────┘               ║
+║                              │ │ │         │                            ║
+║                              │ │ │         │                            ║
+║         Kết nối với L298N:   │ │ │         │                            ║
+║         IN2 ◄────────────────┘ │ │         │                            ║
+║         IN1 ◄──────────────────┘ │         │                            ║
+║         ENA ◄────────────────────┘         │                            ║
+║         GND ◄──────────────────────────────┘                            ║
+║                                                                          ║
+║   ┌──────────────────────────────────────────────────┐                  ║
+║   │              MẠCH ĐIỀU KHIỂN L298N               │                  ║
+║   │                                                  │                  ║
+║   │    OUT1   OUT2                                   │                  ║
+║   │     ●      ●                                     │                  ║
+║   └─────┼──────┼─────────────────────────────────────┘                  ║
+║         │      │                                                        ║
+║         │      │                                                        ║
+║    ┌────┴──────┴────┐                                                   ║
+║    │  MOTOR DC 12V  │                                                   ║
+║    │  BĂNG CHUYỀN   │                                                   ║
+║    │  JGB37-545     │                                                   ║
+║    └────────────────┘                                                   ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+### ⚠️ Lưu ý quan trọng:
+- **Mass chung (Common Ground)**: Phải nối GND của Raspberry Pi với GND của L298N
+- **Jumper ENA**: Gỡ jumper ENA để điều khiển tốc độ bằng PWM
+- **Chiều quay motor**: Nếu motor quay ngược, đổi vị trí OUT1 và OUT2
+
+## 📡 Cảm Biến Hồng Ngoại IR (Phát hiện trái cây)
+
+### Thông số kỹ thuật cảm biến IR:
+- Điện áp hoạt động: 3.3V - 5V
+- Ngõ ra: Digital (HIGH khi phát hiện vật thể)
+- Khoảng cách phát hiện: 2-30cm (có thể điều chỉnh)
+
+### Bảng kết nối:
+
+| Chân cảm biến | Kết nối với |
+|---------------|-------------|
 | VCC | 5V (Pin 2) |
 | GND | GND (Pin 6) |
 | OUT | GPIO 23 (Pin 16) |
 
 ```
-IR Sensor
-┌─────────┐
-│  ┌───┐  │
-│  │ · │  │  (Detection area)
-│  └───┘  │
-└─┬──┬──┬─┘
-  V  G  O  (VCC, GND, OUT)
-  │  │  │
-  │  │  └──── GPIO 23 (Pin 16)
-  │  └─────── GND (Pin 6)
-  └────────── 5V (Pin 2)
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    CẢM BIẾN HỒNG NGOẠI IR - SƠ ĐỒ ĐẤU NỐI                 ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║                    CẤU TẠO CẢM BIẾN IR FC-51                             ║
+║                                                                           ║
+║              ┌─────────────────────────────┐                             ║
+║              │       CẢM BIẾN IR           │                             ║
+║              │                             │                             ║
+║              │   ┌───────┐   ┌───────┐    │                             ║
+║              │   │ ◯ TX  │   │ ◯ RX  │    │  ← LED phát và thu IR       ║
+║              │   │(phát) │   │(nhận) │    │                             ║
+║              │   └───────┘   └───────┘    │                             ║
+║              │                             │                             ║
+║              │      ┌─────────────┐        │                             ║
+║              │      │  ○ Biến trở │        │  ← Điều chỉnh độ nhạy      ║
+║              │      └─────────────┘        │                             ║
+║              │                             │                             ║
+║              │   ● LED báo nguồn (đỏ)      │                             ║
+║              │   ● LED báo phát hiện (xanh)│                             ║
+║              │                             │                             ║
+║              └──────────┬──────────────────┘                             ║
+║                         │                                                ║
+║              ┌──────────┴──────────┐                                     ║
+║              │  VCC   GND   OUT    │  ← 3 chân kết nối                  ║
+║              │   │     │     │     │                                     ║
+║              └───┼─────┼─────┼─────┘                                     ║
+║                  │     │     │                                           ║
+║                  │     │     │                                           ║
+║                  │     │     │                                           ║
+║   ┌──────────────┼─────┼─────┼──────────────────────────────┐           ║
+║   │              │     │     │     RASPBERRY PI 4           │           ║
+║   │              │     │     │                              │           ║
+║   │              │     │     └────────► GPIO 23 (Pin 16)    │           ║
+║   │              │     │               (Tín hiệu ra)        │           ║
+║   │              │     │                                    │           ║
+║   │              │     └──────────────► GND (Pin 6)         │           ║
+║   │              │                     (Mass)               │           ║
+║   │              │                                          │           ║
+║   │              └────────────────────► 5V (Pin 2)          │           ║
+║   │                                    (Nguồn dương)        │           ║
+║   │                                                         │           ║
+║   └─────────────────────────────────────────────────────────┘           ║
+║                                                                          ║
+║   📍 NGUYÊN LÝ HOẠT ĐỘNG:                                               ║
+║   ┌─────────────────────────────────────────────────────────────┐       ║
+║   │                                                             │       ║
+║   │    TX (phát)        Vật thể         RX (nhận)              │       ║
+║   │       ◯ ─ ─ ─ ─ ─► ┌─────┐ ◄─ ─ ─ ─ ◯                     │       ║
+║   │    Tia hồng ngoại  │ 🍎  │  Tia phản xạ                    │       ║
+║   │                    └─────┘                                  │       ║
+║   │                                                             │       ║
+║   │    • Không có vật → OUT = HIGH (1)                         │       ║
+║   │    • Có vật phản xạ → OUT = LOW (0)                        │       ║
+║   │    • Xoay biến trở để điều chỉnh khoảng cách phát hiện     │       ║
+║   │                                                             │       ║
+║   └─────────────────────────────────────────────────────────────┘       ║
+║                                                                          ║
+║   ⚠️  MẸO ĐIỀU CHỈNH:                                                   ║
+║   • Xoay biến trở theo chiều kim đồng hồ → Tăng khoảng cách             ║
+║   • Xoay biến trở ngược chiều kim đồng hồ → Giảm khoảng cách            ║
+║   • LED xanh sáng = đang phát hiện vật thể                              ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
-## 🔋 Power Supply Setup
+## 🔋 Cấu Hình Nguồn Điện
 
-### Option 1: Separate Power Supplies (Recommended)
-
-```
-5V 3A PSU ──────► Raspberry Pi 4 (USB-C)
-                  │
-                  └──► Servo Motor (via GPIO 5V - light loads only)
-
-12V 2A PSU ─────► L298N Motor Driver
-                  │
-                  └──► Conveyor Motor
-```
-
-### Option 2: Single Power Supply with Regulators
-
-If using a single 12V power supply:
-- Use a **buck converter** to step down 12V to 5V (3A) for Raspberry Pi
-- Power motors directly from 12V
-- **Always use separate regulators** - don't backfeed Raspberry Pi from L298N 5V pin
-
-## ⚡ Complete Wiring Schematic
+### Phương án 1: Nguồn riêng biệt (Khuyến nghị)
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                    Raspberry Pi 4                        │
-│                                                          │
-│  5V ──┬── Servo (Red)                                   │
-│  GND ─┼── Servo (Brown)                                 │
-│       ├── L298N GND ──── 12V PSU (-)                    │
-│       ├── IR Sensor GND                                 │
-│  5V ──┴── IR Sensor VCC                                 │
-│                                                          │
-│  GPIO 18 ── Servo Signal (Orange)                       │
-│  GPIO 17 ── L298N ENA                                   │
-│  GPIO 27 ── L298N IN1                                   │
-│  GPIO 22 ── L298N IN2                                   │
-│  GPIO 23 ── IR Sensor OUT                               │
-│                                                          │
-│  CSI Port ── Camera Module                              │
-└──────────────────────────────────────────────────────────┘
-
-      12V PSU (+) ──── L298N 12V
-
-┌──────────────────────┐
-│   L298N Driver       │
-│                      │
-│  OUT1 ─┬─ Motor (+)  │
-│  OUT2 ─┴─ Motor (-)  │
-└──────────────────────┘
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    CẤU HÌNH NGUỒN ĐIỆN - PHƯƠNG ÁN 1                      ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║   ┌─────────────┐          ┌─────────────────────────┐                   ║
+║   │  NGUỒN 5V   │          │                         │                   ║
+║   │    3A       │═════════►│     RASPBERRY PI 4      │                   ║
+║   │  (USB-C)    │          │                         │                   ║
+║   └─────────────┘          │    ┌───────────────┐    │                   ║
+║                            │    │ Cấp nguồn cho │    │                   ║
+║                            │    │ • Cảm biến IR  │    │                   ║
+║                            │    └───────────────┘    │                   ║
+║                            └─────────────────────────┘                   ║
+║                                                                           ║
+║   ┌─────────────┐          ┌─────────────────────────┐                   ║
+║   │  NGUỒN 12V  │          │    MẠCH L298N           │                   ║
+║   │    3A+      │══════┬══►│                         │                   ║
+║   │             │      │   │    ┌───────────────┐    │                   ║
+║   └─────────────┘      │   │    │ Cấp nguồn cho │    │                   ║
+║                        │   │    │ • Motor DC    │    │                   ║
+║                        │   │    │   băng chuyền │    │                   ║
+║                        │   │    └───────────────┘    │                   ║
+║                        │   └─────────────────────────┘                   ║
+║                        │                                               ║
+║                        │   ┌─────────────────────────┐                   ║
+║                        │   │  BUCK CONVERTER LM2596 │                   ║
+║                        └══►│   12V → 6V (cho Servo) │                   ║
+║                            │                         │                   ║
+║                            │    ┌───────────────┐    │                   ║
+║                            │    │ Cấp nguồn 6V  │    │                   ║
+║                            │    │ • Servo MG996R│    │                   ║
+║                            │    └───────────────┘    │                   ║
+║                            └─────────────────────────┘                   ║
+║                                                                           ║
+║   ⚠️  QUAN TRỌNG:                                                        ║
+║   • Phải nối GND của Pi với GND của L298N và LM2596 (Mass chung)        ║
+║   • LM2596 chỉnh điện áp ra = 6V (dùng VOM đo)                           ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
-## 🧪 Testing Procedure
+### Phương án 2: Một nguồn với bộ chuyển đổi
 
-### 1. Test GPIO Pins
+Nếu chỉ dùng một nguồn 12V:
+- Sử dụng **buck converter** để hạ 12V xuống 5V (3A) cho Raspberry Pi
+- Cấp nguồn motor trực tiếp từ 12V
+- **KHÔNG BAO GIỜ** cấp nguồn Pi từ chân 5V của L298N
+
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    CẤU HÌNH NGUỒN ĐIỆN - PHƯƠNG ÁN 2                      ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║                         ┌─────────────┐                                   ║
+║                         │  NGUỒN 12V  │                                   ║
+║                         │    3A+      │                                   ║
+║                         └──────┬──────┘                                   ║
+║                                │                                          ║
+║                    ┌───────────┴───────────┐                             ║
+║                    │                       │                              ║
+║                    ▼                       ▼                              ║
+║         ┌──────────────────┐     ┌─────────────────┐                     ║
+║         │  BUCK CONVERTER  │     │    MẠCH L298N   │                     ║
+║         │    12V → 5V      │     │                 │                     ║
+║         │     (3A)         │     │    Motor DC     │                     ║
+║         └────────┬─────────┘     └─────────────────┘                     ║
+║                  │                                                        ║
+║                  ▼                                                        ║
+║         ┌─────────────────┐                                              ║
+║         │ RASPBERRY PI 4  │                                              ║
+║         │  (qua GPIO 5V)  │                                              ║
+║         └─────────────────┘                                              ║
+║                                                                           ║
+║   ⚠️  CHÚ Ý: Phương án này phức tạp hơn, dễ gây hư hỏng nếu sai         ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+```
+
+## ⚡ Sơ Đồ Đấu Nối Hoàn Chỉnh Toàn Hệ Thống
+
+```
+╔═══════════════════════════════════════════════════════════════════════════════════════════════╗
+║                              SƠ ĐỒ ĐẤU NỐI TỔNG THỂ HỆ THỐNG                                 ║
+╠═══════════════════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                               ║
+║     NGUỒN 5V 3A                              NGUỒN 12V 3A                                     ║
+║    ┌──────────┐                             ┌──────────┐                                     ║
+║    │  5V  GND │                             │ 12V  GND │                                     ║
+║    └──┬───┬───┘                             └──┬───┬───┘                                     ║
+║       │   │                                    │   │                                          ║
+║       │   │    USB-C                           │   │                                          ║
+║       │   └─────────────┐                      │   │                                          ║
+║       │                 │       ┌──────────────┴───┴─────────┐                               ║
+║       │                 │       │                            │                               ║
+║  ┌────┴─────────────────┴───────┼────────────────────────────┼───────────────────────────┐  ║
+║  │                              │                            │                           │  ║
+║  │         RASPBERRY PI 4       │                            │                           │  ║
+║  │                              │                            │                           │  ║
+║  │    ┌─────────────────────────┼────────────────────────────┼───────────────────────┐   │  ║
+║  │    │      GPIO HEADER        │                            │                       │   │  ║
+║  │    │                         │                            │                       │   │  ║
+║  │    │   Pin 2 (5V) ─────┬─────┘                            │                       │   │  ║
+║  │    │                   │                                  │                       │   │  ║
+║  │    │   Pin 6 (GND) ────┼──────────┬───────────────────────┼────┐                  │   │  ║
+║  │    │                   │          │                       │    │                  │   │  ║
+║  │    │   Pin 11 (GPIO17)─┼──────────┼───────────────────┐   │    │                  │   │  ║
+║  │    │                   │          │                   │   │    │                  │   │  ║
+║  │    │   Pin 12 (GPIO18)─┼──────────┼───────────────┐   │   │    │                  │   │  ║
+║  │    │                   │          │               │   │   │    │                  │   │  ║
+║  │    │   Pin 13 (GPIO27)─┼──────────┼───────────┐   │   │   │    │                  │   │  ║
+║  │    │                   │          │           │   │   │   │    │                  │   │  ║
+║  │    │   Pin 15 (GPIO22)─┼──────────┼───────┐   │   │   │   │    │                  │   │  ║
+║  │    │                   │          │       │   │   │   │   │    │                  │   │  ║
+║  │    │   Pin 16 (GPIO23)─┼──────┐   │       │   │   │   │   │    │                  │   │  ║
+║  │    │                   │      │   │       │   │   │   │   │    │                  │   │  ║
+║  │    │   CSI Port ──Camera      │   │       │   │   │   │   │    │                  │   │  ║
+║  │    │                   │      │   │       │   │   │   │   │    │                  │   │  ║
+║  │    └───────────────────┼──────┼───┼───────┼───┼───┼───┼───┼────┼──────────────────┘   │  ║
+║  │                        │      │   │       │   │   │   │   │    │                      │  ║
+║  └────────────────────────┼──────┼───┼───────┼───┼───┼───┼───┼────┼──────────────────────┘  ║
+║                           │      │   │       │   │   │   │   │    │                         ║
+║   ┌───────────────────────┴──┐   │   │       │   │   │   │   │    │                         ║
+║   │     CẢM BIẾN IR          │   │   │       │   │   │   │   │    │                         ║
+║   │  ┌─────────────────────┐ │   │   │       │   │   │   │   │    │                         ║
+║   │  │  VCC ◄──────────────┼─┘   │   │       │   │   │   │   │    │                         ║
+║   │  │  GND ◄──────────────┼─────┼───┘       │   │   │   │   │    │                         ║
+║   │  │  OUT ◄──────────────┼─────┼───────────┼───┼───┼───┼───┼────┘                         ║
+║   │  └─────────────────────┘ │   │           │   │   │   │   │                              ║
+║   └──────────────────────────┘   │           │   │   │   │   │                              ║
+║                                  │           │   │   │   │   │                              ║
+║      ┌───────────────────────────┴───────┐   │   │   │   │   │                              ║
+║      │    BUCK CONVERTER LM2596          │   │   │   │   │   │                              ║
+║      │    (12V → 6V cho Servo)           │   │   │   │   │   │                              ║
+║      │                                   │   │   │   │   │   │                              ║
+║      │   IN+ ◄─────────────────────────────────────────────┼─── Nguồn 12V (+)              ║
+║      │   IN- ◄─────────────────────────────────────────────┼─── Nguồn 12V (-)              ║
+║      │                                   │   │   │   │   │   │                              ║
+║      │   OUT+ (6V) ────┐                 │   │   │   │   │   │                              ║
+║      │   OUT- (GND) ───┼─────┐           │   │   │   │   │   │                              ║
+║      └─────────────────┼─────┼───────────┘   │   │   │   │   │                              ║
+║                        │     │               │   │   │   │   │                              ║
+║   ┌────────────────────┴─────┴───┐           │   │   │   │   │                              ║
+║   │      SERVO MG996R            │           │   │   │   │   │                              ║
+║   │  ┌─────────────────────────┐ │           │   │   │   │   │                              ║
+║   │  │  VCC (Đỏ) ◄─ 6V         │ │           │   │   │   │   │                              ║
+║   │  │  GND (Nâu) ◄─ GND (nối  │ │           │   │   │   │   │                              ║
+║   │  │                Pi GND)   │ │           │   │   │   │   │                              ║
+║   │  │  Signal (Cam) ◄──────────┼─┼───────────┼───┘   │   │   │                              ║
+║   │  └─────────────────────────┘ │           │       │   │   │                              ║
+║   └──────────────────────────────┘           │       │   │   │                              ║
+║                                              │       │   │   │                              ║
+║   ┌──────────────────────────────────────────┴───────┴───┴───┴─────────┐                   ║
+║   │                           MẠCH L298N                                │                   ║
+║   │  ┌──────────────────────────────────────────────────────────────┐  │                   ║
+║   │  │  12V ◄──────────────────────────────────── Nguồn 12V (+)     │  │                   ║
+║   │  │  GND ◄──────────────────────────────────── Nguồn 12V (-)     │  │                   ║
+║   │  │  ENA ◄──────────────────────────────────── GPIO 17           │  │                   ║
+║   │  │  IN1 ◄──────────────────────────────────── GPIO 27           │  │                   ║
+║   │  │  IN2 ◄──────────────────────────────────── GPIO 22           │  │                   ║
+║   │  │  GND ◄──────────────────────────────────── Pi GND            │  │                   ║
+║   │  └──────────────────────────────────────────────────────────────┘  │                   ║
+║   │                                                                     │                   ║
+║   │     OUT1 ────┬─── Motor DC (+)                                     │                   ║
+║   │     OUT2 ────┴─── Motor DC (-)                                     │                   ║
+║   └─────────────────────────────────────────────────────────────────────┘                   ║
+║                       │                                                                      ║
+║              ┌────────┴────────┐                                                            ║
+║              │  MOTOR DC 12V   │                                                            ║
+║              │  BĂNG CHUYỀN    │                                                            ║
+║              └─────────────────┘                                                            ║
+║                                                                                              ║
+║   📍 LƯU Ý QUAN TRỌNG:                                                                      ║
+║   • Servo KHÔNG nối vào Pi 5V - dùng LM2596 cấp 6V                                          ║
+║   • Mass chung: Pi GND = L298N GND = LM2596 OUT- = Nguồn 12V (-)                           ║
+║   • Nguồn 12V phân chia: L298N (motor) + LM2596 (servo)                                     ║
+║                                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════╝
+```
+
+### 📋 Bảng tổng hợp kết nối:
+
+| Linh kiện | Chân | Kết nối với |
+|-----------|------|-------------|
+| **Servo MG996R** | VCC (Đỏ) | LM2596 OUT+ (6V) |
+| | GND (Nâu) | LM2596 OUT- (nối chung Pi GND) |
+| | Signal (Cam) | GPIO 18 (Pin 12) |
+| **LM2596** | IN+ | Nguồn 12V (+) |
+| | IN- | Nguồn 12V (-) |
+| | OUT+ | Servo VCC (6V) |
+| | OUT- | Servo GND + Pi GND |
+| **Cảm biến IR** | VCC | 5V (Pin 2) |
+| | GND | GND (Pin 6) |
+| | OUT | GPIO 23 (Pin 16) |
+| **L298N** | 12V | Nguồn 12V (+) |
+| | GND | Nguồn 12V (-) + Pi GND |
+| | ENA | GPIO 17 (Pin 11) |
+| | IN1 | GPIO 27 (Pin 13) |
+| | IN2 | GPIO 22 (Pin 15) |
+| **Camera** | Cáp ribbon | Cổng CSI |
+| **Motor DC** | (+) | L298N OUT1 |
+| | (-) | L298N OUT2 |
+
+## 🧪 Quy Trình Kiểm Tra
+
+### 1. Kiểm tra chân GPIO
 ```bash
-# Test individual GPIO
-gpio readall  # If gpio utility installed
+# Kiểm tra từng GPIO
+gpio readall  # Nếu đã cài tiện ích gpio
 ```
 
-### 2. Test Servo
+### 2. Kiểm tra Servo
 ```bash
 cd raspberry-pi
 python motor_controller.py
 ```
 
-### 3. Test Conveyor
+### 3. Kiểm tra băng chuyền
 ```bash
-# Run motor controller test
-# Should move servo and start/stop conveyor
+# Chạy module điều khiển motor
+# Servo sẽ quay và băng chuyền sẽ chạy/dừng
 ```
 
-### 4. Test Camera
+### 4. Kiểm tra Camera
 ```bash
 cd raspberry-pi
 python camera_module.py
 ```
 
-### 5. Test Sensor
+### 5. Kiểm tra cảm biến
 ```bash
-# Monitor GPIO 23
+# Theo dõi GPIO 23
 gpio -g mode 23 in
 gpio -g read 23
 ```
 
-## 🐛 Hardware Troubleshooting
+## 🐛 Xử Lý Sự Cố Phần Cứng
 
-### Servo Not Moving
-- Check PWM signal on GPIO 18
-- Verify 5V power connection
-- Test with external 5V power supply
+### Servo không quay
+- Kiểm tra tín hiệu PWM trên GPIO 18
+- Xác nhận kết nối nguồn 5V
+- Thử với nguồn 5V bên ngoài
 
-### Conveyor Not Running
-- Check 12V power supply
-- Verify L298N connections
-- Test motor directly with 12V
-- Check ENA jumper is removed
+### Băng chuyền không chạy
+- Kiểm tra nguồn 12V
+- Xác nhận kết nối L298N
+- Test motor trực tiếp với nguồn 12V
+- Kiểm tra đã gỡ jumper ENA chưa
 
-### Camera Not Detected
+### Camera không nhận diện
 ```bash
 vcgencmd get_camera
-# Should show: supported=1 detected=1
+# Phải hiển thị: supported=1 detected=1
 
-# Enable camera interface
+# Bật giao diện camera
 sudo raspi-config
 # Interface Options → Camera → Enable
 ```
 
-### Sensor Not Detecting
-- Adjust sensitivity potentiometer on sensor
-- Check detection range (usually 2-30cm)
-- Test with reflective object
+### Cảm biến không phát hiện
+- Điều chỉnh biến trở độ nhạy trên cảm biến
+- Kiểm tra khoảng cách phát hiện (thường 2-30cm)
+- Test với vật thể phản xạ tốt
 
-## 📐 Mechanical Assembly
+## 📐 Lắp Ráp Cơ Khí
 
-### Conveyor Belt Setup
-1. Mount conveyor motor securely
-2. Align belt for smooth operation
-3. Position servo at sorting junction
-4. Mount camera above belt with clear view
+### Thiết lập băng chuyền
+1. Gắn chắc chắn motor băng chuyền
+2. Căn chỉnh dây đai cho hoạt động mượt mà
+3. Đặt servo tại vị trí phân loại
+4. Gắn camera phía trên băng chuyền với góc nhìn rõ ràng
 
-### Sorting Mechanism
-- Servo arm should deflect items at junction
-- **Center (90°)**: Items continue straight
-- **Left (30°)**: Items diverted left
-- **Right (150°)**: Items diverted right
+### Cơ cấu phân loại
+- Cánh servo sẽ đẩy vật tại ngã ba
+- **Giữa (90°)**: Vật đi thẳng
+- **Trái (30°)**: Vật rẽ trái
+- **Phải (150°)**: Vật rẽ phải
 
-### Sensor Placement
-- Position IR sensor **before** camera
-- Allows time for image capture
-- Height: Adjust to reliably detect fruit
+### Vị trí cảm biến
+- Đặt cảm biến IR **trước** camera
+- Cho phép có thời gian chụp ảnh
+- Chiều cao: Điều chỉnh để phát hiện trái cây một cách đáng tin cậy
 
 ```
-Flow Direction: ─────────►
-
-  IR Sensor    Camera    Servo Arm
-      │          │          │
-      ▼          ▼          ▼
-┌──────────────────────────────────┐
-│  ■         [ ]         /         │  Conveyor Belt
-└──────────────────────────────────┘
-    │          │          │
-  Detect     Capture    Sort
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    SƠ ĐỒ BỐ TRÍ HỆ THỐNG BĂNG CHUYỀN                      ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║   Hướng di chuyển trái cây: ═══════════════════════════►                 ║
+║                                                                           ║
+║                                                                           ║
+║           CẢM BIẾN IR        CAMERA           SERVO                      ║
+║               │                 │               │                        ║
+║               ▼                 ▼               ▼                        ║
+║                                                                           ║
+║            ┌─────┐          ┌─────┐         ┌─────┐                      ║
+║            │ ▓▓▓ │          │ ◉   │         │  \  │                      ║
+║            │ ▓▓▓ │          │     │         │   \ │ ← Cánh Servo         ║
+║            └──┬──┘          └──┬──┘         └──┬──┘                      ║
+║               │                │               │                         ║
+║   ════════════╪════════════════╪═══════════════╪════════════════════    ║
+║   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ║
+║   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ BĂNG CHUYỀN ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ║
+║   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ║
+║   ════════════════════════════════════════════════╦══════════════════    ║
+║               │                │                  ║                      ║
+║            PHÁT HIỆN        CHỤP ẢNH           PHÂN LOẠI                ║
+║            trái cây        & Nhận dạng                                   ║
+║                                                   ║                      ║
+║                                              ┌────╨────┐                 ║
+║                                              │ THÙNG   │                 ║
+║                                              │ PHÂN    │                 ║
+║                                              │ LOẠI    │                 ║
+║                                              └─────────┘                 ║
+║                                                                           ║
+║   📝 QUY TRÌNH HOẠT ĐỘNG:                                                ║
+║   ┌─────────────────────────────────────────────────────────────┐        ║
+║   │                                                             │        ║
+║   │   1️⃣  Trái cây đi trên băng chuyền                          │        ║
+║   │   2️⃣  Cảm biến IR phát hiện → Dừng băng chuyền              │        ║
+║   │   3️⃣  Camera chụp ảnh                                       │        ║
+║   │   4️⃣  AI phân tích → Tươi/Hư/Khác                          │        ║
+║   │   5️⃣  Servo xoay đúng hướng                                │        ║
+║   │   6️⃣  Băng chuyền chạy tiếp                                │        ║
+║   │   7️⃣  Trái cây được phân loại vào đúng thùng               │        ║
+║   │                                                             │        ║
+║   └─────────────────────────────────────────────────────────────┘        ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
-## ✅ Final Checklist
+## ✅ Danh Sách Kiểm Tra Cuối Cùng
 
-- [ ] All power supplies connected properly
-- [ ] Common ground established
-- [ ] Servo tested (left, center, right)
-- [ ] Conveyor motor tested (forward/stop)
-- [ ] Camera detected and tested
-- [ ] Sensor triggers reliably
-- [ ] No loose connections
-- [ ] Proper insulation on connections
-- [ ] Emergency stop accessible
+- [ ] Tất cả nguồn điện đã kết nối đúng
+- [ ] Mass chung đã được thiết lập
+- [ ] Servo đã test (trái, giữa, phải)
+- [ ] Motor băng chuyền đã test (chạy/dừng)
+- [ ] Camera đã nhận diện và test
+- [ ] Cảm biến phát hiện ổn định
+- [ ] Không có kết nối lỏng
+- [ ] Các mối nối đã được cách điện
+- [ ] Nút dừng khẩn cấp có thể truy cập
 
-## 🔧 Calibration
+## 🔧 Hiệu Chỉnh
 
-After hardware setup, calibrate in [config.py](raspberry-pi/config.py):
+Sau khi lắp đặt phần cứng, hiệu chỉnh trong [config.py](raspberry-pi/config.py):
 
 ```python
-# Adjust these values based on your setup
-SERVO_ANGLE_LEFT = 30      # Calibrate for left sorting
-SERVO_ANGLE_CENTER = 90    # Calibrate for straight
-SERVO_ANGLE_RIGHT = 150    # Calibrate for right sorting
+# Điều chỉnh các giá trị này dựa trên thiết lập của bạn
+SERVO_ANGLE_LEFT = 30      # Góc servo cho phân loại trái
+SERVO_ANGLE_CENTER = 90    # Góc servo cho đi thẳng  
+SERVO_ANGLE_RIGHT = 150    # Góc servo cho phân loại phải
 
-CONVEYOR_SPEED = 75        # Adjust belt speed (0-100)
+CONVEYOR_SPEED = 75        # Tốc độ băng chuyền (0-100)
 ```
 
 ---
 
-**Questions or issues? Check the [main README](README.md) for troubleshooting!**
+**Có câu hỏi hoặc vấn đề? Xem [README chính](README.md) để khắc phục sự cố!**

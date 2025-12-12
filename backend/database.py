@@ -38,7 +38,7 @@ class Database:
                     processing_time REAL,
                     image_url TEXT,
                     image_path TEXT,
-                    firebase_id TEXT,
+                    supabase_id TEXT,
                     synced_to_cloud BOOLEAN DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -60,7 +60,7 @@ class Database:
     async def insert_classification(self, classification, confidence, 
                                    device_id=None, timestamp=None, 
                                    processing_time=None, image_url=None,
-                                   image_path=None, firebase_id=None):
+                                   image_path=None, supabase_id=None):
         """
         Insert classification result into database
         
@@ -70,9 +70,9 @@ class Database:
             device_id (str): Device identifier
             timestamp (float): Unix timestamp
             processing_time (float): Processing time in seconds
-            image_url (str): Firebase Storage URL
+            image_url (str): Supabase Storage URL
             image_path (str): Local/cloud file path
-            firebase_id (str): Firebase document ID
+            supabase_id (str): Supabase record ID
         """
         try:
             if timestamp is None:
@@ -81,10 +81,10 @@ class Database:
             await self.connection.execute('''
                 INSERT INTO classifications 
                 (timestamp, classification, confidence, device_id, processing_time,
-                 image_url, image_path, firebase_id, synced_to_cloud)
+                 image_url, image_path, supabase_id, synced_to_cloud)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (timestamp, classification, confidence, device_id, processing_time,
-                  image_url, image_path, firebase_id, 1 if firebase_id else 0))
+                  image_url, image_path, supabase_id, 1 if supabase_id else 0))
             
             await self.connection.commit()
             logger.debug(f"Inserted classification: {classification} ({confidence:.2%})")

@@ -1,59 +1,49 @@
 """
-Firebase Storage Integration
-Handles image uploads to Firebase Cloud Storage and Firestore
+Supabase Storage Integration
+Handles image uploads to Supabase Storage and Database
 """
-import firebase_admin
-from firebase_admin import credentials, storage, firestore
 import logging
 import os
 from datetime import datetime
+from supabase import create_client, Client
 import config
 
 logging.basicConfig(level=config.LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
-class FirebaseStorage:
-    def __init__(self, credentials_path='firebase_config.json'):
-        """Initialize Firebase connection"""
-        self.credentials_path = credentials_path
-        self.bucket = None
-        self.db = None
+class SupabaseStorage:
+    def __init__(self):
+        """Initialize Supabase connection"""
+        self.supabase: Client = None
         self.initialized = False
         
     def initialize(self):
-        """Initialize Firebase Admin SDK"""
+        """Initialize Supabase client"""
         try:
-            # Check if credentials file exists
-            if not os.path.exists(self.credentials_path):
-                logger.warning(f"Firebase credentials not found: {self.credentials_path}")
+            supabase_url = config.SUPABASE_URL
+            supabase_key = config.SUPABASE_KEY
+            
+            if not supabase_url or not supabase_key:
+                logger.warning("Supabase credentials not configured")
                 logger.warning("Cloud storage features will be disabled")
                 return False
             
-            # Initialize Firebase Admin (only once)
-            if not firebase_admin._apps:
-                cred = credentials.Certificate(self.credentials_path)
-                firebase_admin.initialize_app(cred, {
-                    'storageBucket': config.FIREBASE_STORAGE_BUCKET
-                })
-                logger.info("Firebase Admin SDK initialized")
-            
-            # Get Storage bucket and Firestore client
-            self.bucket = storage.bucket()
-            self.db = firestore.client()
+            # Initialize Supabase client
+            self.supabase = create_client(supabase_url, supabase_key)
             
             self.initialized = True
-            logger.info(f"Firebase Storage connected: {self.bucket.name}")
+            logger.info(f"Supabase connected: {supabase_url}")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to initialize Firebase: {e}")
+            logger.error(f"Failed to initialize Supabase: {e}")
             return False
     
     async def upload_image(self, image_bytes, classification, confidence, 
                           device_id=None, timestamp=None):
         """
-        Upload image to Firebase Storage and metadata to Firestore
+        Upload image to Supabase Storage and metadata to Database
         
         Args:
             image_bytes (bytes): Image data
@@ -65,12 +55,12 @@ class FirebaseStorage:
         Returns:
             dict: {
                 'image_url': str,
-                'firebase_id': str,
+                'record_id': str,
                 'success': bool
             }
         """
         if not self.initialized:
-            logger.warning("Firebase not initialized, skipping upload")
+            logger.warning("Supabase not initialized, skipping upload")
             return {'success': False}
         
         try:
@@ -82,48 +72,45 @@ class FirebaseStorage:
             filename = f"{dt.strftime('%Y%m%d_%H%M%S')}_{classification}.jpg"
             blob_path = f"images/{filename}"
             
-            # Upload to Storage
-            blob = self.bucket.blob(blob_path)
-            blob.upload_from_string(
+            # Upload to Supabase Storage
+            result = self.supabase.storage.from_('fruit-images').upload(
+                blob_path,
                 image_bytes,
-                content_type='image/jpeg'
+                file_options={"content-type": "image/jpeg"}
             )
             
-            # Make publicly accessible
-            blob.make_public()
-            image_url = blob.public_url
+            # Get public URL
+            image_url = self.supabase.storage.from_('fruit-images').get_public_url(blob_path)
             
             logger.info(f"Image uploaded: {filename}")
             
-            # Store metadata in Firestore
-            doc_ref = self.db.collection('classifications').document()
-            doc_ref.set({
-                'timestamp': timestamp,
+            # Store metadata in Supabase Database
+            insert_result = self.supabase.table('classifications').insert({
+                'timestamp': datetime.fromtimestamp(timestamp).isoformat(),
                 'classification': classification,
                 'confidence': confidence,
                 'device_id': device_id,
                 'image_url': image_url,
-                'image_path': blob_path,
-                'created_at': firestore.SERVER_TIMESTAMP
-            })
+                'image_path': blob_path
+            }).execute()
             
-            firebase_id = doc_ref.id
-            logger.info(f"Metadata stored in Firestore: {firebase_id}")
+            record_id = insert_result.data[0]['id'] if insert_result.data else None
+            logger.info(f"Metadata stored in Supabase: {record_id}")
             
             return {
                 'success': True,
                 'image_url': image_url,
-                'firebase_id': firebase_id,
+                'record_id': record_id,
                 'blob_path': blob_path
             }
             
         except Exception as e:
-            logger.error(f"Failed to upload to Firebase: {e}")
+            logger.error(f"Failed to upload to Supabase: {e}")
             return {'success': False, 'error': str(e)}
     
     async def get_recent_images(self, limit=20):
         """
-        Get recent images from Firestore
+        Get recent images from Supabase Database
         
         Args:
             limit (int): Maximum number of results
@@ -135,18 +122,13 @@ class FirebaseStorage:
             return []
         
         try:
-            docs = self.db.collection('classifications') \
-                .order_by('timestamp', direction=firestore.Query.DESCENDING) \
+            result = self.supabase.table('classifications') \
+                .select('*') \
+                .order('timestamp', desc=True) \
                 .limit(limit) \
-                .stream()
+                .execute()
             
-            results = []
-            for doc in docs:
-                data = doc.to_dict()
-                data['id'] = doc.id
-                results.append(data)
-            
-            return results
+            return result.data if result.data else []
             
         except Exception as e:
             logger.error(f"Failed to get recent images: {e}")
@@ -154,7 +136,7 @@ class FirebaseStorage:
     
     async def get_statistics(self):
         """
-        Get statistics from Firestore
+        Get statistics from Supabase Database
         
         Returns:
             dict: Statistics summary
@@ -164,22 +146,21 @@ class FirebaseStorage:
         
         try:
             # Get all classifications
-            docs = self.db.collection('classifications').stream()
+            result = self.supabase.table('classifications').select('*').execute()
             
             total = 0
             category_counts = {}
             confidence_sum = 0
             
-            for doc in docs:
-                data = doc.to_dict()
+            for doc in result.data:
                 total += 1
                 
                 # Count by category
-                classification = data.get('classification', 'unknown')
+                classification = doc.get('classification', 'unknown')
                 category_counts[classification] = category_counts.get(classification, 0) + 1
                 
                 # Sum confidence
-                confidence_sum += data.get('confidence', 0)
+                confidence_sum += doc.get('confidence', 0)
             
             avg_confidence = confidence_sum / total if total > 0 else 0
             
@@ -193,12 +174,12 @@ class FirebaseStorage:
             logger.error(f"Failed to get statistics: {e}")
             return {}
     
-    def check_user_role(self, uid):
+    def check_user_role(self, user_id):
         """
         Check if user is admin
         
         Args:
-            uid (str): Firebase user UID
+            user_id (str): Supabase user ID
             
         Returns:
             str: User role ('admin', 'viewer', or None)
@@ -207,15 +188,43 @@ class FirebaseStorage:
             return None
         
         try:
-            doc = self.db.collection('users').document(uid).get()
-            if doc.exists:
-                return doc.to_dict().get('role', 'viewer')
+            result = self.supabase.table('users').select('role').eq('id', user_id).execute()
+            if result.data:
+                return result.data[0].get('role', 'viewer')
             return None
             
         except Exception as e:
             logger.error(f"Failed to check user role: {e}")
             return None
+    
+    async def delete_image(self, image_path, record_id):
+        """
+        Delete image from storage and database
+        
+        Args:
+            image_path (str): Path to image in storage
+            record_id (str): Database record ID
+            
+        Returns:
+            bool: Success status
+        """
+        if not self.initialized:
+            return False
+        
+        try:
+            # Delete from storage
+            self.supabase.storage.from_('fruit-images').remove([image_path])
+            
+            # Delete from database
+            self.supabase.table('classifications').delete().eq('id', record_id).execute()
+            
+            logger.info(f"Deleted image and record: {record_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to delete: {e}")
+            return False
 
 
-# Global Firebase instance
-firebase_storage = FirebaseStorage()
+# Global Supabase instance
+supabase_storage = SupabaseStorage()
