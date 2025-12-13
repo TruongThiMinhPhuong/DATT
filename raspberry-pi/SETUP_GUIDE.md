@@ -1,24 +1,194 @@
-# 🥧 Cấu hình Raspberry Pi - Hướng dẫn từng file
+# 🍓 HƯỚNG DẪN THIẾT LẬP HỆ THỐNG PHÂN LOẠI TRÁI CÂY
 
-Chi tiết setup cho từng file trong thư mục `raspberry-pi/`
+## 📋 TỔNG QUAN
 
----
+Hệ thống phân loại trái cây tự động sử dụng AI trên Raspberry Pi với các thành phần:
+- **Camera**: Chụp ảnh trái cây
+- **AI Backend**: Phân loại bằng machine learning  
+- **Motors**: Servo + băng tải để phân loại
+- **Sensors**: IR sensor phát hiện vật thể
 
-## 📋 Tổng quan files
+## 🔧 PHẦN CỨNG CẦN THIẾT
+
+### Thành phần chính:
+- Raspberry Pi 4 (4GB+ RAM khuyến nghị)
+- Camera Module 5MP
+- MG996R Servo Motor
+- JGB37-545 DC Motor + L298N Driver
+- FC-51 IR Sensor
+- LM2596 Buck Converter (12V→6V)
+- Adapter 12V/5A
+
+### Kết nối:
+- Breadboard/PCB
+- Jumper wires
+- Terminal blocks
+- Tụ điện 1000µF/16V
+
+## ⚡ THIẾT LẬP NGUỒN ĐIỆN
 
 ```
-raspberry-pi/
-├── config.py              ⚙️ CẤU HÌNH CHÍNH - PHẢI SỬA
-├── .env.example          📝 Template biến môi trường
-├── main.py               ▶️ Chương trình chính
-├── control_server.py     🌐 Server điều khiển từ xa
-├── motor_controller.py   🔧 Điều khiển motor
-├── camera_module.py      📷 Module camera
-├── rabbitmq_client.py    📨 Kết nối RabbitMQ
-├── start.sh              🚀 Script khởi động
-├── test_ir_sensor.py     🧪 Test IR sensor
-└── requirements.txt      📦 Dependencies
+Nguồn 12V/5A
+├── Raspberry Pi ← USB-C 5V/3A
+├── LM2596 (12V→6V) ← Servo MG996R
+├── L298N (12V) ← Motor băng tải
+└── IR Sensor ← 5V từ Pi
 ```
+
+**LƯU Ý**: Điều chỉnh LM2596 output = 6.0V chính xác!
+
+## 🔌 SƠ ĐỒ KẾT NỐI GPIO
+
+| GPIO | Pin | Thành phần |
+|------|-----|------------|
+| 18   | 12  | Servo PWM  |
+| 17   | 11  | L298N ENA  |
+| 27   | 13  | L298N IN1  |
+| 22   | 15  | L298N IN2  |
+| 24   | 18  | IR Sensor  |
+| 5V   | 2   | IR Sensor VCC |
+| GND  | 6   | Common GND |
+
+## 🚀 CÀI ĐẶT PHẦN MỀM
+
+### Bước 1: Clone dự án
+```bash
+git clone <repository-url>
+cd raspberry-pi
+```
+
+### Bước 2: Chạy script cài đặt
+```bash
+./start.sh
+```
+
+Script sẽ:
+- Tăng swap space lên 4GB
+- Cài đặt system packages
+- Tạo virtual environment
+- Cài Python packages
+- Kích hoạt camera/GPIO
+
+### Bước 3: Cấu hình
+```bash
+cp .env.example .env
+nano .env  # Sửa RABBITMQ_HOST
+```
+
+## 🧪 KIỂM TRA HỆ THỐNG
+
+### Kiểm tra tổng thể:
+```bash
+./check_project.sh
+```
+
+### Kiểm tra từng thành phần:
+```bash
+# Phần cứng
+python3 test_hardware.py
+
+# IR Sensor
+python3 test_ir_sensor.py  
+
+# Kết nối mạng
+python3 test_connection.py
+
+# Hướng dẫn phần cứng
+python3 hardware_guide.py
+```
+
+## 🏃 CHẠY HỆ THỐNG
+
+### Khởi động hệ thống:
+```bash
+./run.sh
+```
+
+### Tắt hệ thống:
+```
+Ctrl+C
+```
+
+## 🔧 HIỆU CHUẨN
+
+### 1. LM2596 Buck Converter
+- Đặt multimeter ở chế độ DC voltage
+- Kết nối probe vào output LM2596  
+- Xoay potentiometer đến 6.0V ±0.1V
+- Test với servo kết nối
+
+### 2. Servo Motor
+- Kiểm tra góc quay: 0°, 90°, 180°
+- Điều chỉnh `SERVO_ANGLE_*` trong config.py
+- Test với: `python3 test_hardware.py`
+
+### 3. IR Sensor
+- Điều chỉnh độ nhạy bằng potentiometer
+- Test phát hiện vật thể ở khoảng cách mong muốn
+- Kiểm tra debounce time
+
+## 🐛 KHẮC PHỤC LỖI
+
+### Lỗi camera:
+```bash
+sudo raspi-config  # Enable camera
+libcamera-hello    # Test camera
+```
+
+### Lỗi GPIO:
+```bash
+sudo usermod -a -G gpio pi
+# Hoặc chạy với sudo
+```
+
+### Lỗi packages:
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Lỗi RabbitMQ:
+- Kiểm tra IP address laptop
+- Đảm bảo RabbitMQ chạy trên laptop
+- Test: `python3 test_connection.py`
+
+## 📊 GIÁM SÁT
+
+### Log files:
+- System logs: `journalctl -f`
+- Application logs: Hiển thị trên console
+
+### Hiệu suất:
+- CPU temperature: `vcgencmd measure_temp`
+- Memory usage: `free -h`
+- Disk space: `df -h`
+
+## 🔄 QUY TRÌNH HOẠT ĐỘNG
+
+1. **Khởi động**: Hệ thống init camera, motors, RabbitMQ
+2. **Chờ**: IR sensor phát hiện vật thể
+3. **Chụp**: Camera chụp ảnh sau delay
+4. **Gửi**: Ảnh được gửi qua RabbitMQ đến laptop
+5. **Phân loại**: AI model trên laptop phân loại
+6. **Nhận**: Raspberry Pi nhận kết quả
+7. **Phân loại**: Servo xoay, băng tải phân loại
+8. **Lặp lại**: Quay về bước 2
+
+## 🛡️ AN TOÀN
+
+- **KHÔNG** kết nối servo trực tiếp 12V
+- **LUÔN** kiểm tra cực tính trước cấp nguồn
+- **SỬ DỤNG** cầu chì bảo vệ
+- **KIỂM TRA** nhiệt độ LM2596 khi hoạt động
+- **CÓ** nút emergency stop nếu cần
+
+## 📞 HỖ TRỢ
+
+Nếu gặp vấn đề:
+1. Chạy `./check_project.sh` để chẩn đoán
+2. Kiểm tra logs và error messages
+3. Xem file hardware_guide.py
+4. Test từng component riêng biệt
 
 ---
 

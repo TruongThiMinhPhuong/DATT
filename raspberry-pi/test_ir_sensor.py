@@ -3,7 +3,14 @@
 IR Sensor Test Script
 Test the IR sensor before running the full system
 """
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    print("❌ RPi.GPIO không được cài đặt")
+    print("   Chạy: pip install RPi.GPIO")
+    print("   Hoặc: ./start.sh để cài đặt đầy đủ")
+    exit(1)
+
 import time
 import sys
 

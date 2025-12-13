@@ -9,7 +9,7 @@ load_dotenv()
 # RabbitMQ Configuration
 # Use Tailscale IP for stable connection (recommended)
 # Get IP with: tailscale ip -4
-RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', '100.64.1.2')  # Tailscale IP of backend laptop
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', '100.112.253.55')  # Tailscale IP of backend laptop
 RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'guest')
@@ -20,20 +20,30 @@ IMAGE_QUEUE = 'fruit_images'
 RESULT_QUEUE = 'classification_results'
 
 # GPIO Pin Configuration (BCM Mode)
-SERVO_PIN = 18  # PWM capable pin for MG996R servo
+SERVO_PIN = 18  # PWM capable pin for MG996R servo (via LM2596)
 CONVEYOR_ENABLE_PIN = 17  # L298N Enable A
 CONVEYOR_IN1_PIN = 27  # L298N Input 1
 CONVEYOR_IN2_PIN = 22  # L298N Input 2
+
+# Power Supply Configuration
+# LM2596 Buck Converter: 12V -> 6V for Servo
+LM2596_INPUT_VOLTAGE = 12.0   # Input voltage to LM2596 (from main PSU)
+LM2596_OUTPUT_VOLTAGE = 6.0   # Output voltage for servo (adjustable)
+LM2596_MAX_CURRENT = 3.0      # Maximum output current (3A)
+SERVO_POWER_VOLTAGE = 6.0     # Servo operating voltage
 
 # Servo Angles (MG996R: 0-180 degrees)
 SERVO_ANGLE_LEFT = 30    # For "other" objects
 SERVO_ANGLE_CENTER = 90  # For fresh fruit (straight)
 SERVO_ANGLE_RIGHT = 150  # For spoiled fruit
 
-# Servo PWM Configuration
+# Servo PWM Configuration (6V Power Supply via LM2596)
 SERVO_FREQUENCY = 50  # 50Hz for standard servo
-SERVO_MIN_DUTY = 2.5  # Minimum duty cycle (0 degrees)
-SERVO_MAX_DUTY = 12.5  # Maximum duty cycle (180 degrees)
+SERVO_MIN_DUTY = 2.5  # Minimum duty cycle (0 degrees) - 6V optimized
+SERVO_MAX_DUTY = 12.5  # Maximum duty cycle (180 degrees) - 6V optimized
+SERVO_PULSE_WIDTH_MIN = 1.0  # Minimum pulse width (ms) for 0°
+SERVO_PULSE_WIDTH_MAX = 2.0  # Maximum pulse width (ms) for 180°
+SERVO_POWER_STABILIZE_TIME = 0.1  # Time to stabilize after power on
 
 # Conveyor Motor Configuration
 CONVEYOR_SPEED = 75  # Speed percentage (0-100)

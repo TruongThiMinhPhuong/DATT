@@ -5,8 +5,20 @@ Motor Controller for Servo and Conveyor Motors
 """
 import time
 import logging
-import RPi.GPIO as GPIO
-import config
+
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    print("⚠️  RPi.GPIO không được cài đặt. Chạy: pip install RPi.GPIO")
+    print("   Hoặc chạy: ./start.sh để cài đặt đầy đủ")
+    raise
+
+try:
+    import config
+except ImportError:
+    print("⚠️  Không thể import config.py")
+    print("   Đảm bảo bạn đang chạy từ thư mục dự án")
+    raise
 
 logging.basicConfig(level=config.LOG_LEVEL)
 logger = logging.getLogger(__name__)
@@ -60,6 +72,7 @@ class MotorController:
     def _angle_to_duty_cycle(self, angle):
         """
         Convert angle (0-180) to duty cycle percentage
+        Optimized for 6V power supply via LM2596
         
         Args:
             angle (float): Servo angle in degrees (0-180)
@@ -67,7 +80,7 @@ class MotorController:
         Returns:
             float: Duty cycle percentage
         """
-        # Map angle to duty cycle range
+        # Map angle to duty cycle range (calibrated for 6V operation)
         duty = config.SERVO_MIN_DUTY + (angle / 180.0) * (config.SERVO_MAX_DUTY - config.SERVO_MIN_DUTY)
         return duty
     
