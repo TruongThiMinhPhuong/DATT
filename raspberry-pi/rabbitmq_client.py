@@ -6,6 +6,8 @@ import json
 import logging
 import time
 import threading
+import base64
+import uuid
 import pika
 from pika.exceptions import AMQPConnectionError, AMQPChannelError
 import config
@@ -82,15 +84,16 @@ class RabbitMQClient:
             return False
         
         try:
-            # Prepare message
-            message = {
-                'image': image_bytes.hex(),  # Convert bytes to hex string
-                'metadata': metadata or {}
-            }
+            # Convert image to base64 (backend expects base64!)
+            image_base64 = base64.b64encode(image_bytes).decode('utf-8')
             
-            # Add timestamp if not present
-            if 'timestamp' not in message['metadata']:
-                message['metadata']['timestamp'] = time.time()
+            # Prepare message in backend-compatible format
+            message = {
+                'id': str(uuid.uuid4()),  # Unique message ID
+                'image_data': image_base64,  # Base64 encoded image
+                'timestamp': metadata.get('timestamp', time.time()) if metadata else time.time(),
+                'device_id': metadata.get('device_id', 'rpi_unknown') if metadata else 'rpi_unknown'
+            }
             
             # Serialize message
             message_json = json.dumps(message)
@@ -106,7 +109,7 @@ class RabbitMQClient:
                 )
             )
             
-            logger.info(f"Image sent to queue ({len(image_bytes)} bytes)")
+            logger.info(f"Image sent to queue (ID: {message['id']}, size: {len(image_bytes)} bytes)")
             return True
             
         except Exception as e:
