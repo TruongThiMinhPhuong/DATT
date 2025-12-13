@@ -73,13 +73,28 @@ class FruitSortingSystem:
         Handle classification result from backend
         
         Args:
-            result (dict): Classification result with category and confidence
+            result (dict): Classification result from backend
+                          Format: {'id': '...', 'fruit_type': 'Apple', 'confidence': 0.89, 
+                                   'quality': 'Good', 'weight': 156.3}
         """
         try:
-            classification = result.get('classification', config.CLASSIFICATION_OTHER)
+            # Backend sends: fruit_type, quality, confidence, weight
+            fruit_type = result.get('fruit_type', 'Unknown')
             confidence = result.get('confidence', 0.0)
+            quality = result.get('quality', 'Unknown')
+            weight = result.get('weight', 0.0)
             
-            logger.info(f"Classification: {classification} (confidence: {confidence:.2%})")
+            logger.info(f"Classification: {fruit_type} (confidence: {confidence:.2%}, quality: {quality}, weight: {weight}g)")
+            
+            # Map backend response to motor classification categories
+            if quality in ['Excellent', 'Good']:
+                classification = config.CLASSIFICATION_FRESH
+            elif quality in ['Fair', 'Poor', 'Bad']:
+                classification = config.CLASSIFICATION_SPOILED
+            else:
+                classification = config.CLASSIFICATION_OTHER
+            
+            logger.info(f"Sorting as: {classification}")
             
             # Perform sorting action
             self.motor.sort_fruit(classification)
